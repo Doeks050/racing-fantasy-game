@@ -18,6 +18,7 @@ type GameStore = {
   setActiveMarketTrader: (traderId: string) => void;
   buyMarketListing: (listingId: string) => void;
   confirmRaceLoadout: () => void;
+  completeRaceWeekend: () => void;
   placeGarageSlot: (params: { slotId: string; column: number; row: number; isRotated: boolean }) => void;
   moveGarageSlot: (params: { slotId: string; column: number; row: number }) => void;
   rotateGarageSlot: (params: { slotId: string }) => void;
@@ -71,6 +72,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   confirmRaceLoadout: () =>
     set((store) => ({
       gameState: withAutosave(RaceWeekendEngine.confirmRaceLoadout(store.gameState)),
+    })),
+
+  completeRaceWeekend: () =>
+    set((store) => ({
+      gameState: withAutosave(RaceWeekendEngine.completeRaceWeekend(store.gameState)),
     })),
 
   placeGarageSlot: (params) =>
