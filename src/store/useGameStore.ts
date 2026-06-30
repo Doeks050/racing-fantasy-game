@@ -1,13 +1,17 @@
 "use client";
 
 import { create } from "zustand";
-import { createInitialGameState, InventoryEngine, LoadoutEngine, type GameState } from "@/engine";
+import { createInitialGameState, InventoryEngine, LoadoutEngine, SaveEngine, type GameState } from "@/engine";
 import type { CarPartType, TeamSlotType } from "@/types";
 
 type CarId = "car1" | "car2";
 
 type GameStore = {
   gameState: GameState;
+  isLoadedFromSave: boolean;
+  hydrateFromSave: () => void;
+  saveGameState: () => void;
+  clearSavedGameState: () => void;
   selectDriver: (params: { carId: CarId; driverId: string }) => void;
   equipCarPart: (params: { carId: CarId; slotType: CarPartType; partId: string }) => void;
   equipTeamMember: (params: { slotType: TeamSlotType; memberId: string }) => void;
@@ -17,38 +21,58 @@ type GameStore = {
   resetGameState: () => void;
 };
 
-export const useGameStore = create<GameStore>((set) => ({
+function withAutosave(state: GameState) {
+  SaveEngine.save(state);
+  return state;
+}
+
+export const useGameStore = create<GameStore>((set, get) => ({
   gameState: createInitialGameState(),
+  isLoadedFromSave: false,
+
+  hydrateFromSave: () =>
+    set({
+      gameState: SaveEngine.load(),
+      isLoadedFromSave: true,
+    }),
+
+  saveGameState: () => SaveEngine.save(get().gameState),
+
+  clearSavedGameState: () => SaveEngine.clear(),
 
   selectDriver: (params) =>
     set((store) => ({
-      gameState: LoadoutEngine.selectDriver(store.gameState, params),
+      gameState: withAutosave(LoadoutEngine.selectDriver(store.gameState, params)),
     })),
 
   equipCarPart: (params) =>
     set((store) => ({
-      gameState: LoadoutEngine.equipCarPart(store.gameState, params),
+      gameState: withAutosave(LoadoutEngine.equipCarPart(store.gameState, params)),
     })),
 
   equipTeamMember: (params) =>
     set((store) => ({
-      gameState: LoadoutEngine.equipTeamMember(store.gameState, params),
+      gameState: withAutosave(LoadoutEngine.equipTeamMember(store.gameState, params)),
     })),
 
   placeGarageSlot: (params) =>
     set((store) => ({
-      gameState: InventoryEngine.placeGarageSlot(store.gameState, params),
+      gameState: withAutosave(InventoryEngine.placeGarageSlot(store.gameState, params)),
     })),
 
   moveGarageSlot: (params) =>
     set((store) => ({
-      gameState: InventoryEngine.moveGarageSlot(store.gameState, params),
+      gameState: withAutosave(InventoryEngine.moveGarageSlot(store.gameState, params)),
     })),
 
   rotateGarageSlot: (params) =>
     set((store) => ({
-      gameState: InventoryEngine.rotateGarageSlot(store.gameState, params),
+      gameState: withAutosave(InventoryEngine.rotateGarageSlot(store.gameState, params)),
     })),
 
-  resetGameState: () => set({ gameState: createInitialGameState() }),
+  resetGameState: () => {
+    const nextState = createInitialGameState();
+    SaveEngine.save(nextState);
+    set({ gameState: nextState });
+  },
 }));
