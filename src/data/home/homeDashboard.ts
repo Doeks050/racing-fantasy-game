@@ -45,51 +45,37 @@ export type HomeCircuitMeta = {
 
 const fallbackWeekendInfo: HomeWeekendInfo = {
   weekendId: "fallback",
-  weekLabel: "Week 08 / 24",
-  countryLabel: "United Kingdom",
-  countryFlag: "🇬🇧",
+  weekLabel: "Week 01 / 24",
+  countryLabel: "Fantasy",
+  countryFlag: "🏁",
   raceStartsInLabel: "02d 14h 37m",
 };
 
 const fallbackCircuitMeta: HomeCircuitMeta = {
   circuitId: "fallback",
-  lengthKm: "5.301",
-  turns: 18,
+  lengthKm: "5.742",
+  turns: 16,
   laps: 52,
-  trackTempC: 23,
+  trackTempC: 26,
 };
 
 export const homeWeekendInfoById: Record<string, HomeWeekendInfo> = {
-  weekend_neon_harbor_01: {
-    weekendId: "weekend_neon_harbor_01",
-    weekLabel: "Week 08 / 24",
-    countryLabel: "United Kingdom",
-    countryFlag: "🇬🇧",
+  weekend_circuit_1_01: {
+    weekendId: "weekend_circuit_1_01",
+    weekLabel: "Week 01 / 24",
+    countryLabel: "Fantasy",
+    countryFlag: "🏁",
     raceStartsInLabel: "02d 14h 37m",
   },
 };
 
 export const homeCircuitMetaById: Record<string, HomeCircuitMeta> = {
-  circuit_neon_harbor: {
-    circuitId: "circuit_neon_harbor",
-    lengthKm: "5.301",
-    turns: 18,
+  circuit_1: {
+    circuitId: "circuit_1",
+    lengthKm: "5.742",
+    turns: 16,
     laps: 52,
-    trackTempC: 23,
-  },
-  circuit_apex_desert: {
-    circuitId: "circuit_apex_desert",
-    lengthKm: "6.210",
-    turns: 14,
-    laps: 47,
-    trackTempC: 38,
-  },
-  circuit_monsoon_peak: {
-    circuitId: "circuit_monsoon_peak",
-    lengthKm: "4.860",
-    turns: 21,
-    laps: 58,
-    trackTempC: 18,
+    trackTempC: 26,
   },
 };
 
