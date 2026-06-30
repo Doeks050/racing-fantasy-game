@@ -1,14 +1,23 @@
-import { carParts, marketListings, marketTraders } from "@/data";
-import type { CarPart, MarketListing, MarketTrader } from "@/types";
+import { carParts, drivers, marketListings, marketTraders } from "@/data";
+import type { CarPart, Driver, MarketListing, MarketTrader } from "@/types";
 import type { GameState } from "./GameState";
 
 export const MARKET_GRID_COLUMNS = 6;
 export const MARKET_MIN_ROWS = 6;
 
-export type HydratedMarketListing = MarketListing & {
+type HydratedCarPartListing = MarketListing & {
+  kind: "car_part";
   trader: MarketTrader;
   item: CarPart;
 };
+
+type HydratedDriverListing = MarketListing & {
+  kind: "driver";
+  trader: MarketTrader;
+  item: Driver;
+};
+
+export type HydratedMarketListing = HydratedCarPartListing | HydratedDriverListing;
 
 function touch(state: GameState): GameState {
   return {
@@ -60,14 +69,35 @@ export const MarketEngine = {
       .filter((listing) => listing.traderId === resolvedTraderId)
       .map((listing) => {
         const trader = marketTraders.find((candidate) => candidate.id === listing.traderId);
+
+        if (!trader) {
+          return undefined;
+        }
+
+        if (listing.kind === "driver") {
+          const item = drivers.find((candidate) => candidate.id === listing.itemId);
+
+          if (!item) {
+            return undefined;
+          }
+
+          return {
+            ...listing,
+            kind: "driver" as const,
+            trader,
+            item,
+          };
+        }
+
         const item = carParts.find((candidate) => candidate.id === listing.itemId);
 
-        if (!trader || !item) {
+        if (!item) {
           return undefined;
         }
 
         return {
           ...listing,
+          kind: "car_part" as const,
           trader,
           item,
         };
