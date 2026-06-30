@@ -103,8 +103,8 @@ export function createInitialGameState(): GameState {
     },
     race: {
       activeLoadout: demoLoadout,
-      currentCircuitId: "circuit_neon_harbor",
-      currentWeekendId: "weekend_neon_harbor_01",
+      currentCircuitId: "circuit_1",
+      currentWeekendId: "weekend_circuit_1_01",
       deadlineLabel: "Friday 20:00",
       isSubmitted: false,
       isCompleted: false,
