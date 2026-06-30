@@ -6,9 +6,15 @@ export type SaveAdapter = {
   clear: () => void;
 };
 
+export type AsyncSaveAdapter = {
+  load: () => Promise<GameState | null>;
+  save: (state: GameState) => Promise<void>;
+  clear: () => Promise<void>;
+};
+
 export const LOCAL_SAVE_KEY = "racing_fantasy_game_state_v1";
 
-function isGameState(value: unknown): value is GameState {
+export function isGameState(value: unknown): value is GameState {
   if (!value || typeof value !== "object") {
     return false;
   }
@@ -68,5 +74,17 @@ export const SaveEngine = {
 
   clear(adapter: SaveAdapter = LocalStorageSaveAdapter) {
     adapter.clear();
+  },
+
+  async loadAsync(adapter: AsyncSaveAdapter): Promise<GameState> {
+    return (await adapter.load()) ?? createInitialGameState();
+  },
+
+  async saveAsync(state: GameState, adapter: AsyncSaveAdapter) {
+    await adapter.save(state);
+  },
+
+  async clearAsync(adapter: AsyncSaveAdapter) {
+    await adapter.clear();
   },
 };
