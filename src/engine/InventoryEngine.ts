@@ -54,6 +54,19 @@ function getEquippedCarPartSlotIds(state: GameState) {
   ].filter((slotId): slotId is string => Boolean(slotId));
 }
 
+function hydrateGarageSlot(slot: GameInventorySlot): HydratedGarageSlot | undefined {
+  const item = getGarageSlotItem(slot);
+
+  if (!item) {
+    return undefined;
+  }
+
+  return {
+    ...slot,
+    item,
+  };
+}
+
 export const InventoryEngine = {
   getOwnedDrivers(state: GameState): Driver[] {
     return state.garage.ownedDriverIds
@@ -98,18 +111,16 @@ export const InventoryEngine = {
 
   getHydratedGarageSlots(state: GameState): HydratedGarageSlot[] {
     return state.garage.inventorySlots
-      .map((slot) => {
-        const item = getGarageSlotItem(slot);
+      .map(hydrateGarageSlot)
+      .filter((slot): slot is HydratedGarageSlot => Boolean(slot));
+  },
 
-        if (!item) {
-          return undefined;
-        }
+  getHydratedStashSlots(state: GameState): HydratedGarageSlot[] {
+    const equippedSlotIds = getEquippedCarPartSlotIds(state);
 
-        return {
-          ...slot,
-          item,
-        };
-      })
+    return state.garage.inventorySlots
+      .filter((slot) => !equippedSlotIds.includes(slot.slotId))
+      .map(hydrateGarageSlot)
       .filter((slot): slot is HydratedGarageSlot => Boolean(slot));
   },
 
