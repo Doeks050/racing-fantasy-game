@@ -32,7 +32,7 @@ const moreItems: { id: Screen; label: string; description: string }[] = [
   { id: "raceWeekend", label: "Race Weekend", description: "Deadlines and race status" },
   { id: "circuits", label: "Circuits", description: "Sector profiles and track traits" },
   { id: "teamHq", label: "Team HQ", description: "Team identity and facilities" },
-  { id: "upgrades", label: "Upgrades", description: "Improve parts over time" },
+  { id: "upgrades", label: "Reward Draft", description: "Choose 1 of 3 race rewards" },
   { id: "sponsors", label: "Sponsors", description: "Sponsor challenges" },
   { id: "results", label: "Race Results", description: "Simulation outcome" },
 ];
