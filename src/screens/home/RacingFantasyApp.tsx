@@ -101,7 +101,6 @@ export function RacingFantasyApp() {
   const circuitMeta = getHomeCircuitMeta(gameState.race.currentCircuitId);
   const weekendInfo = getHomeWeekendInfo(gameState.race.currentWeekendId);
   const readyPercent = Math.round((validation.filledSlots / validation.totalSlots) * 100);
-  const playerStanding = homeStandingsPreview.find((item) => item.isPlayer);
   const deadlines = getHomeDeadlines({
     loadoutDeadlineLabel: gameState.race.deadlineLabel,
     rewardDraftStatus: rewardCount ? "Ready" : "After race",
@@ -204,35 +203,20 @@ export function RacingFantasyApp() {
                 </Panel>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Panel title="Your Team">
-                  <div className="grid gap-3">
-                    <p className="truncate text-base font-black uppercase leading-tight text-zinc-50">{player.teamName}</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-md border border-white/10 bg-black/35 p-2">
-                        <p className="text-[9px] uppercase text-zinc-500">OVR</p>
-                        <p className="text-2xl font-black text-zinc-50">{Math.round(readyPercent * 0.86)}</p>
-                      </div>
-                      <div className="rounded-md border border-white/10 bg-black/35 p-2">
-                        <p className="text-[9px] uppercase text-zinc-500">Rank</p>
-                        <p className="text-2xl font-black text-zinc-50">{playerStanding?.rank ?? "--"}</p>
-                      </div>
+              <Panel title="Race Entry" action={weekendStatus}>
+                <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+                  <div className="min-w-0">
+                    <div className="grid grid-cols-[1fr_auto] text-[10px]">
+                      <span className="text-zinc-500">Loadout ready</span>
+                      <span className="font-black text-zinc-100">{validation.filledSlots}/{validation.totalSlots}</span>
                     </div>
-                    <button onClick={() => setScreen("teamHq")} className="rounded-md border border-white/10 bg-black/40 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-300 active:scale-95">Team details</button>
+                    <div className="mt-2"><ProgressBar value={readyPercent} /></div>
                   </div>
-                </Panel>
-
-                <Panel title="Race Status">
-                  <div className="grid gap-2">
-                    <div className="grid grid-cols-[1fr_auto] text-[10px]"><span className="text-zinc-500">Status</span><span className="font-black text-red-400">{weekendStatus}</span></div>
-                    <div className="grid grid-cols-[1fr_auto] text-[10px]"><span className="text-zinc-500">Ready</span><span className="font-black text-zinc-100">{validation.filledSlots}/{validation.totalSlots}</span></div>
-                    <ProgressBar value={readyPercent} />
-                    <button onClick={() => setScreen(validation.isReady ? "raceWeekend" : "loadout")} className="rounded-md bg-red-600 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white active:scale-95">
-                      {validation.isReady ? "Confirm" : "Fix loadout"}
-                    </button>
-                  </div>
-                </Panel>
-              </div>
+                  <button onClick={() => setScreen(validation.isReady ? "raceWeekend" : "loadout")} className="rounded-md bg-red-600 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white active:scale-95">
+                    {validation.isReady ? "Confirm" : "Fix"}
+                  </button>
+                </div>
+              </Panel>
 
               <Panel title="Standings" action="Global">
                 <div className="grid gap-1.5">
