@@ -1,5 +1,8 @@
+"use client";
+
+import { InventoryEngine } from "@/engine";
+import { useGameStore } from "@/store/useGameStore";
 import type { CarPart, GaragePickerMode, TeamMember } from "@/types";
-import { carParts, teamMembers } from "@/data";
 
 type GaragePickerScreenProps = {
   mode: GaragePickerMode;
@@ -18,16 +21,17 @@ export function GaragePickerScreen({
   onSelectCarPart,
   onSelectTeamMember,
 }: GaragePickerScreenProps) {
+  const gameState = useGameStore((store) => store.gameState);
   const title = `Select ${label(mode.slotType)}`;
 
   const carPartItems =
     mode.type === "car_part"
-      ? carParts.filter((part) => part.type === mode.slotType)
+      ? InventoryEngine.getCompatibleCarParts(gameState, mode.slotType)
       : [];
 
   const teamItems =
     mode.type === "team_member"
-      ? teamMembers.filter((member) => member.slotType === mode.slotType)
+      ? InventoryEngine.getCompatibleTeamMembers(gameState, mode.slotType)
       : [];
 
   return (
@@ -95,7 +99,7 @@ export function GaragePickerScreen({
 
       {carPartItems.length === 0 && teamItems.length === 0 && (
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
-          <p className="text-sm text-zinc-400">No compatible items found.</p>
+          <p className="text-sm text-zinc-400">No compatible owned items found.</p>
         </div>
       )}
     </div>
