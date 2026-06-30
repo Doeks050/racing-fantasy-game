@@ -84,7 +84,51 @@ function ProgressBar({ value }: { value: number }) {
 }
 
 function scheduleStatusLabel(status: string, time: string) {
-  return status === "completed" ? "DONE" : time;
+  if (status === "completed") {
+    return "DONE";
+  }
+
+  if (status === "locked") {
+    return "LOCKED";
+  }
+
+  return time;
+}
+
+function scheduleStatusClasses(status: string, isRace: boolean) {
+  if (status === "completed") {
+    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+  }
+
+  if (isRace) {
+    return "border-red-500/40 bg-red-500/10 text-red-300";
+  }
+
+  return "border-zinc-700 bg-zinc-900 text-zinc-300";
+}
+
+function deadlineTarget(id: string): Screen {
+  if (id === "reward_draft") {
+    return "upgrades";
+  }
+
+  if (id === "sponsor_lock") {
+    return "sponsors";
+  }
+
+  return "raceWeekend";
+}
+
+function deadlineValueClasses(id: string, value: string) {
+  if (id === "reward_draft" && value === "Ready") {
+    return "text-purple-300";
+  }
+
+  if (id.includes("lock")) {
+    return "text-red-300";
+  }
+
+  return "text-zinc-100";
 }
 
 export function RacingFantasyApp() {
@@ -144,7 +188,7 @@ export function RacingFantasyApp() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_28%,rgba(239,68,68,0.22),transparent_34%),linear-gradient(180deg,rgba(13,15,18,0.35),#050607_90%)]" />
                 <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_50%,transparent_100%)] opacity-50" />
                 <div className="absolute bottom-9 left-6 h-14 w-56 skew-x-[-18deg] rounded-md border border-red-500/30 bg-black/70 shadow-[0_0_45px_rgba(239,68,68,0.24)]" />
-                <div className="absolute bottom-15 left-16 h-5 w-24 rounded-full bg-red-500/40 blur-xl" />
+                <div className="absolute bottom-[60px] left-16 h-5 w-24 rounded-full bg-red-500/40 blur-xl" />
                 <div className="absolute bottom-8 left-11 h-9 w-9 rounded-full border-4 border-zinc-800 bg-black" />
                 <div className="absolute bottom-8 left-48 h-9 w-9 rounded-full border-4 border-zinc-800 bg-black" />
 
@@ -176,27 +220,53 @@ export function RacingFantasyApp() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <Panel title="Schedule">
-                  <div className="grid gap-2">
-                    {homeSchedule.map((item) => (
-                      <div key={item.id} className="grid grid-cols-[1fr_30px_44px] items-center gap-2 text-[10px]">
-                        <span className={`truncate font-bold uppercase ${item.id === "race" ? "text-red-400" : "text-zinc-300"}`}>{item.name}</span>
-                        <span className="text-zinc-500">{item.day}</span>
-                        <span className={item.status === "completed" ? "text-emerald-400" : item.id === "race" ? "text-red-400" : "text-zinc-400"}>
-                          {scheduleStatusLabel(item.status, item.time)}
-                        </span>
-                      </div>
-                    ))}
+                <Panel title="Schedule" action="Weekend">
+                  <div className="grid gap-1.5">
+                    {homeSchedule.map((item, index) => {
+                      const isRace = item.id === "race";
+                      const isCompleted = item.status === "completed";
+
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setScreen("raceWeekend")}
+                          className="grid grid-cols-[18px_1fr_auto] items-center gap-2 rounded-md bg-black/35 px-2 py-2 text-left active:scale-[0.98]"
+                        >
+                          <div className="relative flex h-full justify-center">
+                            {index < homeSchedule.length - 1 && <span className="absolute top-5 h-[calc(100%+6px)] w-px bg-white/10" />}
+                            <span
+                              className={`relative mt-0.5 h-2.5 w-2.5 rounded-full border ${
+                                isCompleted ? "border-emerald-400 bg-emerald-400" : isRace ? "border-red-400 bg-red-500" : "border-zinc-500 bg-zinc-800"
+                              }`}
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className={`truncate text-[10px] font-black uppercase ${isRace ? "text-red-300" : "text-zinc-200"}`}>{item.name}</p>
+                            <p className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-500">{item.day} · {item.time}</p>
+                          </div>
+                          <span className={`rounded-sm border px-1.5 py-1 text-[8px] font-black uppercase ${scheduleStatusClasses(item.status, isRace)}`}>
+                            {scheduleStatusLabel(item.status, item.time)}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </Panel>
 
-                <Panel title="Deadlines" action="View all">
-                  <div className="grid gap-2 text-[10px]">
+                <Panel title="Deadlines" action="Locks">
+                  <div className="grid gap-2">
                     {deadlines.map((item) => (
-                      <div key={item.id} className="grid grid-cols-[1fr_auto] items-center gap-2">
-                        <span className="truncate text-zinc-500">{item.label}</span>
-                        <span className="font-black text-zinc-200">{item.value}</span>
-                      </div>
+                      <button
+                        key={item.id}
+                        onClick={() => setScreen(deadlineTarget(item.id))}
+                        className="rounded-md border border-white/10 bg-black/35 p-2 text-left active:scale-[0.98]"
+                      >
+                        <p className="truncate text-[9px] font-black uppercase tracking-[0.12em] text-zinc-500">{item.label}</p>
+                        <div className="mt-1 grid grid-cols-[1fr_auto] items-end gap-2">
+                          <p className={`truncate text-base font-black leading-none ${deadlineValueClasses(item.id, item.value)}`}>{item.value}</p>
+                          <span className="text-[10px] text-zinc-600">›</span>
+                        </div>
+                      </button>
                     ))}
                   </div>
                 </Panel>
