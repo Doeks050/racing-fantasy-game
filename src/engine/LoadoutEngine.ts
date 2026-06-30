@@ -4,6 +4,32 @@ import type { GameState } from "./GameState";
 
 type CarId = "car1" | "car2";
 
+const requiredCarPartSlots: CarPartType[] = [
+  "chassis",
+  "engine",
+  "gearbox",
+  "suspension",
+  "front_wing",
+  "rear_wing",
+  "floor",
+  "brakes",
+];
+
+const requiredTeamSlots: TeamSlotType[] = [
+  "pit_crew",
+  "strategist",
+  "race_engineer",
+  "data_analyst",
+  "mechanic_chief",
+];
+
+export type LoadoutValidation = {
+  isReady: boolean;
+  filledSlots: number;
+  totalSlots: number;
+  missing: string[];
+};
+
 function touch(state: GameState): GameState {
   return {
     ...state,
@@ -18,7 +44,68 @@ function getEquippedCarPartSlotIds(state: GameState) {
   ].filter((slotId): slotId is string => Boolean(slotId));
 }
 
+function label(value: string) {
+  return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function validateCar(state: GameState, carId: CarId) {
+  const car = state.race.activeLoadout[carId];
+  const missing: string[] = [];
+  let filledSlots = 0;
+
+  if (car.driverId) {
+    filledSlots += 1;
+  } else {
+    missing.push(`${carId === "car1" ? "Car 1" : "Car 2"}: Driver`);
+  }
+
+  requiredCarPartSlots.forEach((slotType) => {
+    const inventorySlotId = car.parts[slotType];
+    const inventorySlot = state.garage.inventorySlots.find((slot) => slot.slotId === inventorySlotId);
+    const part = carParts.find((candidate) => candidate.id === inventorySlot?.entityId);
+
+    if (inventorySlot && part?.type === slotType) {
+      filledSlots += 1;
+      return;
+    }
+
+    missing.push(`${carId === "car1" ? "Car 1" : "Car 2"}: ${label(slotType)}`);
+  });
+
+  return { filledSlots, missing };
+}
+
 export const LoadoutEngine = {
+  validateRaceLoadout(state: GameState): LoadoutValidation {
+    const car1 = validateCar(state, "car1");
+    const car2 = validateCar(state, "car2");
+    const teamMissing: string[] = [];
+    let teamFilledSlots = 0;
+
+    requiredTeamSlots.forEach((slotType) => {
+      const memberId = state.race.activeLoadout.team[slotType];
+      const member = teamMembers.find((candidate) => candidate.id === memberId);
+
+      if (member?.slotType === slotType) {
+        teamFilledSlots += 1;
+        return;
+      }
+
+      teamMissing.push(`Team: ${label(slotType)}`);
+    });
+
+    const totalSlots = 23;
+    const filledSlots = car1.filledSlots + car2.filledSlots + teamFilledSlots;
+    const missing = [...car1.missing, ...car2.missing, ...teamMissing];
+
+    return {
+      isReady: missing.length === 0,
+      filledSlots,
+      totalSlots,
+      missing,
+    };
+  },
+
   selectDriver(state: GameState, params: { carId: CarId; driverId: string }): GameState {
     const driverExists = drivers.some((driver) => driver.id === params.driverId);
     const ownsDriver = state.garage.ownedDriverIds.includes(params.driverId);
