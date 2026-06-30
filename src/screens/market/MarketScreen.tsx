@@ -9,6 +9,14 @@ function label(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function listingTypeLabel(kind: string, type?: string) {
+  if (kind === "driver") {
+    return "Driver";
+  }
+
+  return type ? label(type) : "Item";
+}
+
 export function MarketScreen() {
   const gameState = useGameStore((store) => store.gameState);
   const setActiveMarketTrader = useGameStore((store) => store.setActiveMarketTrader);
@@ -24,7 +32,7 @@ export function MarketScreen() {
         <h2 className="mt-1 text-2xl font-black">Market</h2>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="grid grid-cols-2 gap-2">
         {traders.map((trader) => {
           const isActive = trader.id === activeTrader.id;
 
@@ -32,7 +40,7 @@ export function MarketScreen() {
             <button
               key={trader.id}
               onClick={() => setActiveMarketTrader(trader.id)}
-              className={`min-w-36 rounded-2xl border p-3 text-left active:scale-[0.98] ${
+              className={`rounded-2xl border p-3 text-left active:scale-[0.98] ${
                 isActive
                   ? "border-cyan-300 bg-cyan-950/50 text-cyan-100"
                   : "border-zinc-800 bg-zinc-900 text-zinc-300"
@@ -73,6 +81,7 @@ export function MarketScreen() {
           {listings.map((listing) => {
             const width = listing.isRotated ? listing.item.gridSize.height : listing.item.gridSize.width;
             const height = listing.isRotated ? listing.item.gridSize.width : listing.item.gridSize.height;
+            const typeLabel = listing.kind === "car_part" ? listingTypeLabel(listing.kind, listing.item.type) : listingTypeLabel(listing.kind);
 
             return (
               <button
@@ -88,7 +97,7 @@ export function MarketScreen() {
                   <p className="text-[10px] text-zinc-500">x{listing.stock}</p>
                 </div>
                 <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{listing.item.name}</p>
-                <p className="mt-1 text-[10px] text-zinc-500">{label(listing.item.type)}</p>
+                <p className="mt-1 text-[10px] text-zinc-500">{typeLabel}</p>
                 <p className="mt-1 text-[10px] font-black text-cyan-300">{listing.price} cr</p>
               </button>
             );
@@ -98,7 +107,7 @@ export function MarketScreen() {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
         <p className="text-sm text-zinc-400">
-          Market uses the same 6-column grid concept as Garage Stash. Each trader owns categories of parts, so players shop by specialist instead of one flat market list.
+          Market uses the same 6-column grid concept as Garage Stash. Traders are shown in a fixed mobile grid, so there is no horizontal scrolling.
         </p>
       </div>
     </div>
