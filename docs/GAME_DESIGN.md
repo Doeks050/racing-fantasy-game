@@ -69,15 +69,17 @@ Market also uses a 6-column grid system instead of a flat shop list.
 
 Market is organized by specialist traders.
 
+The trader selector must fit inside the mobile screen. No horizontal scrolling is allowed.
+
 Current trader categories:
 - Aero Lab: Front Wing, Rear Wing, Floor
 - Powertrain Bay: Engine, Gearbox
 - Mechanical Shop: Chassis, Suspension, Brakes
+- Driver Agency: Drivers
 
 Each trader shows listings inside a grid layout. This keeps Garage and Market visually and mechanically consistent.
 
 Future trader categories can include:
-- Driver Agency
 - Team Staff Office
 - Sponsor Broker
 - Prototype Parts Dealer
