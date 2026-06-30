@@ -165,22 +165,11 @@ export const InventoryEngine = {
     });
   },
 
-  moveGarageSlot(
+  placeGarageSlot(
     state: GameState,
-    params: { slotId: string; column: number; row: number },
+    params: { slotId: string; column: number; row: number; isRotated: boolean },
   ): GameState {
-    const slot = state.garage.inventorySlots.find((candidate) => candidate.slotId === params.slotId);
-
-    if (!slot) {
-      return state;
-    }
-
-    const canPlace = this.canPlaceGarageSlot(state, {
-      slotId: params.slotId,
-      column: params.column,
-      row: params.row,
-      isRotated: slot.isRotated,
-    });
+    const canPlace = this.canPlaceGarageSlot(state, params);
 
     if (!canPlace) {
       return state;
@@ -198,10 +187,29 @@ export const InventoryEngine = {
                   column: params.column,
                   row: params.row,
                 },
+                isRotated: params.isRotated,
               }
             : candidate,
         ),
       },
+    });
+  },
+
+  moveGarageSlot(
+    state: GameState,
+    params: { slotId: string; column: number; row: number },
+  ): GameState {
+    const slot = state.garage.inventorySlots.find((candidate) => candidate.slotId === params.slotId);
+
+    if (!slot) {
+      return state;
+    }
+
+    return this.placeGarageSlot(state, {
+      slotId: params.slotId,
+      column: params.column,
+      row: params.row,
+      isRotated: Boolean(slot.isRotated),
     });
   },
 
@@ -212,31 +220,11 @@ export const InventoryEngine = {
       return state;
     }
 
-    const nextRotation = !slot.isRotated;
-    const canPlace = this.canPlaceGarageSlot(state, {
+    return this.placeGarageSlot(state, {
       slotId: params.slotId,
       column: slot.gridPosition.column,
       row: slot.gridPosition.row,
-      isRotated: nextRotation,
-    });
-
-    if (!canPlace) {
-      return state;
-    }
-
-    return touch({
-      ...state,
-      garage: {
-        ...state.garage,
-        inventorySlots: state.garage.inventorySlots.map((candidate) =>
-          candidate.slotId === params.slotId
-            ? {
-                ...candidate,
-                isRotated: nextRotation,
-              }
-            : candidate,
-        ),
-      },
+      isRotated: !slot.isRotated,
     });
   },
 };
