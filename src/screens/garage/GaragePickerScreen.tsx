@@ -8,6 +8,7 @@ type GaragePickerScreenProps = {
   mode: GaragePickerMode;
   onBack: () => void;
   onSelectCarPartSlot: (slot: HydratedGarageSlot) => void;
+  onRemoveCarPart: () => void;
   onSelectTeamMember: (member: TeamMember) => void;
 };
 
@@ -23,6 +24,7 @@ export function GaragePickerScreen({
   mode,
   onBack,
   onSelectCarPartSlot,
+  onRemoveCarPart,
   onSelectTeamMember,
 }: GaragePickerScreenProps) {
   const gameState = useGameStore((store) => store.gameState);
@@ -55,6 +57,19 @@ export function GaragePickerScreen({
         <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Garage Picker</p>
         <h2 className="mt-1 text-2xl font-black">{title}</h2>
       </div>
+
+      {mode.type === "car_part" && currentInventorySlotId && (
+        <button
+          onClick={onRemoveCarPart}
+          className="rounded-3xl border border-red-900/60 bg-red-950/20 p-4 text-left active:scale-[0.98]"
+        >
+          <p className="text-xs uppercase tracking-[0.2em] text-red-300">Mounted Part</p>
+          <h3 className="mt-1 text-lg font-black text-zinc-100">Remove from car</h3>
+          <p className="mt-2 text-sm text-zinc-400">
+            Demount this part and move it back into Garage Stash.
+          </p>
+        </button>
+      )}
 
       {carPartSlots.map((slot) => {
         const isCurrent = slot.slotId === currentInventorySlotId;
@@ -126,7 +141,7 @@ export function GaragePickerScreen({
         </button>
       ))}
 
-      {carPartSlots.length === 0 && teamItems.length === 0 && (
+      {carPartSlots.length === 0 && teamItems.length === 0 && !currentInventorySlotId && (
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
           <p className="text-sm text-zinc-400">No compatible unused owned items found.</p>
         </div>
