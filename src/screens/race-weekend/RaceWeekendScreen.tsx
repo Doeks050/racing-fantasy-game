@@ -6,8 +6,10 @@ import { useGameStore } from "@/store/useGameStore";
 export function RaceWeekendScreen() {
   const gameState = useGameStore((store) => store.gameState);
   const confirmRaceLoadout = useGameStore((store) => store.confirmRaceLoadout);
+  const completeRaceWeekend = useGameStore((store) => store.completeRaceWeekend);
   const validation = LoadoutEngine.validateRaceLoadout(gameState);
   const canConfirm = RaceWeekendEngine.canConfirm(gameState);
+  const canComplete = RaceWeekendEngine.canComplete(gameState);
   const statusLabel = RaceWeekendEngine.getStatusLabel(gameState);
 
   return (
@@ -91,6 +93,40 @@ export function RaceWeekendScreen() {
             : validation.isReady
               ? "Confirm Loadout"
               : "Complete Loadout First"}
+        </button>
+      </section>
+
+      <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Race Simulation</p>
+        <h3 className="mt-1 text-xl font-black text-zinc-100">
+          {gameState.race.isCompleted ? "Race Completed" : "Complete Race Weekend"}
+        </h3>
+        <p className="mt-2 text-sm text-zinc-400">
+          {gameState.race.isCompleted
+            ? "The race is finished. Reward Draft is now available."
+            : "Complete the race weekend after confirming your loadout. This creates the reward draft."}
+        </p>
+
+        {gameState.race.completedAt && (
+          <p className="mt-3 rounded-2xl bg-zinc-950 p-3 text-xs text-zinc-400">
+            Completed at: {new Date(gameState.race.completedAt).toLocaleString()}
+          </p>
+        )}
+
+        <button
+          onClick={completeRaceWeekend}
+          disabled={!canComplete}
+          className={`mt-4 w-full rounded-2xl px-4 py-4 font-black active:scale-[0.98] ${
+            canComplete
+              ? "bg-cyan-400 text-zinc-950"
+              : "bg-zinc-800 text-zinc-500"
+          }`}
+        >
+          {gameState.race.isCompleted
+            ? "Race Already Completed"
+            : gameState.race.isSubmitted
+              ? "Complete Weekend"
+              : "Confirm Loadout First"}
         </button>
       </section>
     </div>
