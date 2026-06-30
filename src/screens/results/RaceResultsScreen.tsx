@@ -1,21 +1,11 @@
 "use client";
 
-import { carParts, circuits, drivers, teamMembers } from "@/data";
-import { calculateRaceResult } from "@/systems";
+import { RaceEngine } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 
 export function RaceResultsScreen() {
-  const loadout = useGameStore((store) => store.gameState.race.activeLoadout);
-  const currentCircuitId = useGameStore((store) => store.gameState.race.currentCircuitId);
-  const circuit = circuits.find((candidate) => candidate.id === currentCircuitId) ?? circuits[0];
-
-  const result = calculateRaceResult({
-    loadout,
-    circuit,
-    drivers,
-    parts: carParts,
-    teamMembers,
-  });
+  const gameState = useGameStore((store) => store.gameState);
+  const result = RaceEngine.calculateCurrentRaceResult(gameState);
 
   return (
     <div className="flex flex-col gap-4">
