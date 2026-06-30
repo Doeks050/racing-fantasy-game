@@ -44,6 +44,15 @@ Each car has 8 fixed part slots:
 - Floor
 - Brakes
 
+## Brake Kit Brands
+Current brake-kit brands:
+- Carbex
+- Bremswork
+- Vescari
+- RPS (Race Performance Systems)
+
+Brake kits are normal car parts and must follow the no-stacking grid item rules.
+
 ## Team Slots
 - Pit Crew
 - Strategist
