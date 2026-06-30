@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { createInitialGameState, InventoryEngine, LoadoutEngine, MarketEngine, RaceWeekendEngine, SaveEngine, type GameState } from "@/engine";
 import { RewardEngine } from "@/engine/RewardEngine";
+import { starterGarageInventorySlots, starterOwnedPartIds } from "@/data/starter/starterGarage";
 import type { CarPartType, TeamSlotType } from "@/types";
 
 type CarId = "car1" | "car2";
@@ -32,8 +33,21 @@ function withAutosave(state: GameState) {
   return state;
 }
 
+function createStarterState() {
+  const nextState = createInitialGameState();
+
+  return {
+    ...nextState,
+    garage: {
+      ...nextState.garage,
+      inventorySlots: starterGarageInventorySlots,
+      ownedPartIds: starterOwnedPartIds,
+    },
+  };
+}
+
 export const useGameStore = create<GameStore>((set, get) => ({
-  gameState: createInitialGameState(),
+  gameState: createStarterState(),
   isLoadedFromSave: false,
 
   hydrateFromSave: () =>
@@ -102,7 +116,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     })),
 
   resetGameState: () => {
-    const nextState = createInitialGameState();
+    const nextState = createStarterState();
     SaveEngine.save(nextState);
     set({ gameState: nextState });
   },
