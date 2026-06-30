@@ -6,6 +6,7 @@ export const marketTraders: MarketTrader[] = [
     name: "Aero Lab",
     description: "Front wings, rear wings and floors for sector speed and stability.",
     categoryLabel: "Aero Parts",
+    listingKinds: ["car_part"],
     partTypes: ["front_wing", "rear_wing", "floor"],
   },
   {
@@ -13,6 +14,7 @@ export const marketTraders: MarketTrader[] = [
     name: "Powertrain Bay",
     description: "Engines and gearboxes for top speed and acceleration builds.",
     categoryLabel: "Powertrain",
+    listingKinds: ["car_part"],
     partTypes: ["engine", "gearbox"],
   },
   {
@@ -20,7 +22,15 @@ export const marketTraders: MarketTrader[] = [
     name: "Mechanical Shop",
     description: "Chassis, suspension and brakes for balanced race reliability.",
     categoryLabel: "Mechanical",
+    listingKinds: ["car_part"],
     partTypes: ["chassis", "suspension", "brakes"],
+  },
+  {
+    id: "trader_driver_agency",
+    name: "Driver Agency",
+    description: "Race drivers for Car 1 and Car 2 loadout slots.",
+    categoryLabel: "Drivers",
+    listingKinds: ["driver"],
   },
 ];
 
@@ -95,6 +105,33 @@ export const marketListings: MarketListing[] = [
     itemId: "common_brakes_01",
     price: 600,
     stock: 5,
+    gridPosition: { column: 4, row: 0 },
+  },
+  {
+    id: "listing_driver_milo_vance",
+    traderId: "trader_driver_agency",
+    kind: "driver",
+    itemId: "driver_milo_vance",
+    price: 1500,
+    stock: 1,
+    gridPosition: { column: 0, row: 0 },
+  },
+  {
+    id: "listing_driver_kira_vale",
+    traderId: "trader_driver_agency",
+    kind: "driver",
+    itemId: "driver_kira_vale",
+    price: 2600,
+    stock: 1,
+    gridPosition: { column: 2, row: 0 },
+  },
+  {
+    id: "listing_driver_enzo_rix",
+    traderId: "trader_driver_agency",
+    kind: "driver",
+    itemId: "driver_enzo_rix",
+    price: 5000,
+    stock: 1,
     gridPosition: { column: 4, row: 0 },
   },
 ];
