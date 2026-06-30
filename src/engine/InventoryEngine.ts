@@ -90,19 +90,8 @@ export const InventoryEngine = {
     return this.getOwnedCarParts(state).filter((part) => part.type === slotType);
   },
 
-  getCompatibleCarPartSlots(
-    state: GameState,
-    params: { slotType: CarPartType; currentInventorySlotId?: string },
-  ): HydratedGarageSlot[] {
-    const equippedSlotIds = getEquippedCarPartSlotIds(state);
-
-    return this.getHydratedGarageSlots(state)
-      .filter((slot) => slot.item.type === params.slotType)
-      .filter(
-        (slot) =>
-          slot.slotId === params.currentInventorySlotId ||
-          !equippedSlotIds.includes(slot.slotId),
-      );
+  getCompatibleCarPartSlots(state: GameState, params: { slotType: CarPartType }): HydratedGarageSlot[] {
+    return this.getHydratedStashSlots(state).filter((slot) => slot.item.type === params.slotType);
   },
 
   getCompatibleTeamMembers(state: GameState, slotType: TeamSlotType): TeamMember[] {
