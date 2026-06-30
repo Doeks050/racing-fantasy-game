@@ -20,26 +20,14 @@
 }
 
 * {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(113, 113, 122, 0.28) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 *::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: rgba(113, 113, 122, 0.24);
-  border-radius: 999px;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(161, 161, 170, 0.34);
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 body {
