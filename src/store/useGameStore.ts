@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { createInitialGameState, InventoryEngine, LoadoutEngine, SaveEngine, type GameState } from "@/engine";
+import { createInitialGameState, InventoryEngine, LoadoutEngine, MarketEngine, SaveEngine, type GameState } from "@/engine";
 import type { CarPartType, TeamSlotType } from "@/types";
 
 type CarId = "car1" | "car2";
@@ -15,6 +15,7 @@ type GameStore = {
   selectDriver: (params: { carId: CarId; driverId: string }) => void;
   equipCarPart: (params: { carId: CarId; slotType: CarPartType; partId: string }) => void;
   equipTeamMember: (params: { slotType: TeamSlotType; memberId: string }) => void;
+  setActiveMarketTrader: (traderId: string) => void;
   placeGarageSlot: (params: { slotId: string; column: number; row: number; isRotated: boolean }) => void;
   moveGarageSlot: (params: { slotId: string; column: number; row: number }) => void;
   rotateGarageSlot: (params: { slotId: string }) => void;
@@ -53,6 +54,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   equipTeamMember: (params) =>
     set((store) => ({
       gameState: withAutosave(LoadoutEngine.equipTeamMember(store.gameState, params)),
+    })),
+
+  setActiveMarketTrader: (traderId) =>
+    set((store) => ({
+      gameState: withAutosave(MarketEngine.setActiveTrader(store.gameState, traderId)),
     })),
 
   placeGarageSlot: (params) =>
