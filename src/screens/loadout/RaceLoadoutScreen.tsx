@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { carParts, demoLoadout, drivers, teamMembers } from "@/data";
 import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
-import type { CarPart, GaragePickerMode, RaceLoadout, TeamMember } from "@/types";
+import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
+import type { CarPart, Driver, GaragePickerMode, RaceLoadout, TeamMember } from "@/types";
 
 type Tab = "car1" | "car2" | "team";
 
@@ -34,6 +35,26 @@ export function RaceLoadoutScreen() {
   const [tab, setTab] = useState<Tab>("car1");
   const [loadout, setLoadout] = useState<RaceLoadout>(demoLoadout);
   const [pickerMode, setPickerMode] = useState<GaragePickerMode | null>(null);
+  const [isDriverPickerOpen, setIsDriverPickerOpen] = useState(false);
+
+  if (isDriverPickerOpen && tab !== "team") {
+    return (
+      <DriverPickerScreen
+        onBack={() => setIsDriverPickerOpen(false)}
+        onSelectDriver={(driver: Driver) => {
+          setLoadout((current) => ({
+            ...current,
+            [tab]: {
+              ...current[tab],
+              driverId: driver.id,
+            },
+          }));
+
+          setIsDriverPickerOpen(false);
+        }}
+      />
+    );
+  }
 
   if (pickerMode) {
     return (
@@ -94,12 +115,12 @@ export function RaceLoadoutScreen() {
 
       {tab !== "team" ? (
         <>
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Driver</p>
             <div className="mt-3 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold">{driver?.name}</h2>
-                <p className="text-sm text-zinc-400">Driver picker komt hierna</p>
+                <p className="text-sm text-zinc-400">Tap to change driver</p>
               </div>
               <div className="rounded-2xl border border-cyan-400/40 px-3 py-2 text-cyan-300">
                 {driver?.rarity}
@@ -137,7 +158,7 @@ export function RaceLoadoutScreen() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
             <h3 className="font-bold">Car Performance</h3>
             <div className="mt-3 grid gap-2">
               {["Top Speed", "Acceleration", "Cornering", "Braking", "Stability", "Reliability"].map((stat, i) => (
@@ -154,7 +175,7 @@ export function RaceLoadoutScreen() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
             <h3 className="font-bold">Driver Stats</h3>
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
               {driver &&
@@ -195,7 +216,7 @@ export function RaceLoadoutScreen() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
             <h3 className="font-bold">Team Performance</h3>
             <div className="mt-3 grid gap-2">
               {["Pit Stop Speed", "Strategy", "Setup Quality", "Reliability Support", "Data Analysis"].map((stat, i) => (
