@@ -8,7 +8,7 @@ import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
 import { useGameStore } from "@/store/useGameStore";
 import type { Driver, GaragePickerMode, TeamMember } from "@/types";
 
- type Tab = "car1" | "car2" | "team";
+type Tab = "car1" | "car2" | "team";
 
 type CarTab = "car1" | "car2";
 
