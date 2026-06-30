@@ -160,6 +160,7 @@ export const MarketEngine = {
     return marketListings
       .filter((listing) => activeListingIds.includes(listing.id))
       .filter((listing) => listing.traderId === resolvedTraderId)
+      .filter((listing) => listing.kind !== "driver" || !state.garage.ownedDriverIds.includes(listing.itemId))
       .map((listing) => {
         const trader = marketTraders.find((candidate) => candidate.id === listing.traderId);
 
