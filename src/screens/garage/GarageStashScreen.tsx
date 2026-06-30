@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { GARAGE_GRID_COLUMNS, InventoryEngine } from "@/engine";
+import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 
 const CELL_HEIGHT_PX = 58;
 const GRID_GAP_PX = 4;
+const TAP_MOVE_THRESHOLD_PX = 8;
 
 function label(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -13,26 +14,95 @@ function label(value: string) {
 
 type DragState = {
   slotId: string;
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
   targetColumn: number;
   targetRow: number;
   isRotated: boolean;
   isValid: boolean;
   anchorColumn: number;
   anchorRow: number;
+  didMove: boolean;
 };
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
+function StatPill({ stat, value }: { stat: string; value: number }) {
+  return (
+    <div className="rounded-xl bg-zinc-950 p-2">
+      <p className="text-[10px] uppercase text-zinc-500">{label(stat)}</p>
+      <p className="text-sm font-bold text-zinc-100">{value > 0 ? `+${value}` : value}</p>
+    </div>
+  );
+}
+
+function ItemInfoSheet({ slot, onClose }: { slot: HydratedGarageSlot; onClose: () => void }) {
+  const width = slot.isRotated ? slot.item.gridSize.height : slot.item.gridSize.width;
+  const height = slot.isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-3 pb-3">
+      <button className="absolute inset-0" aria-label="Close item info" onClick={onClose} />
+
+      <section className="relative w-full max-w-md rounded-3xl border border-cyan-500/30 bg-zinc-950 p-4 shadow-2xl">
+        <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-zinc-700" />
+
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">{slot.item.rarity}</p>
+            <h3 className="mt-1 text-2xl font-black text-zinc-100">{slot.item.name}</h3>
+            <p className="mt-1 text-sm text-zinc-400">{label(slot.item.type)}</p>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="rounded-2xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-bold text-zinc-300 active:scale-95"
+          >
+            Close
+          </button>
+        </div>
+
+        <p className="mt-4 text-sm leading-6 text-zinc-300">{slot.item.description}</p>
+
+        <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+            <p className="text-[10px] uppercase text-zinc-500">Value</p>
+            <p className="font-black text-cyan-300">{slot.item.value}</p>
+          </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+            <p className="text-[10px] uppercase text-zinc-500">Grid</p>
+            <p className="font-black text-cyan-300">{width}x{height}</p>
+          </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+            <p className="text-[10px] uppercase text-zinc-500">Rotation</p>
+            <p className="font-black text-cyan-300">{slot.isRotated ? "Rotated" : "Default"}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {Object.entries(slot.item.stats).map(([stat, value]) => (
+            <StatPill key={stat} stat={stat} value={value ?? 0} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function GarageStashScreen() {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [infoSlotId, setInfoSlotId] = useState<string | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const gameState = useGameStore((store) => store.gameState);
   const placeGarageSlot = useGameStore((store) => store.placeGarageSlot);
   const slots = InventoryEngine.getHydratedGarageSlots(gameState);
   const rowCount = InventoryEngine.getGridRowCount(slots);
+  const infoSlot = slots.find((slot) => slot.slotId === infoSlotId) ?? null;
 
   function getGridMetrics() {
     const grid = gridRef.current;
@@ -64,7 +134,15 @@ export function GarageStashScreen() {
       : slot.item.gridSize;
   }
 
-  function buildDragState(slotId: string, clientX: number, clientY: number, anchorColumn: number, anchorRow: number) {
+  function buildDragState(
+    slotId: string,
+    clientX: number,
+    clientY: number,
+    anchorColumn: number,
+    anchorRow: number,
+    startX: number,
+    startY: number,
+  ) {
     const metrics = getGridMetrics();
     const slot = slots.find((candidate) => candidate.slotId === slotId);
 
@@ -78,6 +156,7 @@ export function GarageStashScreen() {
     const currentSize = getSlotVisualSize(slot.slotId, currentRotation);
     const currentColumn = Math.max(0, rawColumn - clamp(anchorColumn, 0, currentSize.width - 1));
     const currentRow = Math.max(0, rawRow - clamp(anchorRow, 0, currentSize.height - 1));
+    const didMove = Math.hypot(clientX - startX, clientY - startY) > TAP_MOVE_THRESHOLD_PX;
     const currentFits = InventoryEngine.canPlaceGarageSlot(gameState, {
       slotId,
       column: currentColumn,
@@ -88,12 +167,17 @@ export function GarageStashScreen() {
     if (currentFits) {
       return {
         slotId,
+        startX,
+        startY,
+        currentX: clientX,
+        currentY: clientY,
         targetColumn: currentColumn,
         targetRow: currentRow,
         isRotated: currentRotation,
         isValid: true,
         anchorColumn,
         anchorRow,
+        didMove,
       } satisfies DragState;
     }
 
@@ -109,12 +193,17 @@ export function GarageStashScreen() {
 
     return {
       slotId,
+      startX,
+      startY,
+      currentX: clientX,
+      currentY: clientY,
       targetColumn: rotatedFits ? rotatedColumn : currentColumn,
       targetRow: rotatedFits ? rotatedRow : currentRow,
       isRotated: rotatedFits ? !currentRotation : currentRotation,
       isValid: rotatedFits,
       anchorColumn,
       anchorRow,
+      didMove,
     } satisfies DragState;
   }
 
@@ -138,12 +227,17 @@ export function GarageStashScreen() {
 
     setDragState({
       slotId,
+      startX: event.clientX,
+      startY: event.clientY,
+      currentX: event.clientX,
+      currentY: event.clientY,
       targetColumn: slot.gridPosition.column,
       targetRow: slot.gridPosition.row,
       isRotated: Boolean(slot.isRotated),
       isValid: true,
       anchorColumn,
       anchorRow,
+      didMove: false,
     });
   }
 
@@ -158,6 +252,8 @@ export function GarageStashScreen() {
       event.clientY,
       dragState.anchorColumn,
       dragState.anchorRow,
+      dragState.startX,
+      dragState.startY,
     );
 
     if (nextDragState) {
@@ -172,13 +268,17 @@ export function GarageStashScreen() {
 
     event.currentTarget.releasePointerCapture(event.pointerId);
 
-    if (dragState.isValid) {
-      placeGarageSlot({
-        slotId: dragState.slotId,
-        column: dragState.targetColumn,
-        row: dragState.targetRow,
-        isRotated: dragState.isRotated,
-      });
+    if (dragState.didMove) {
+      if (dragState.isValid) {
+        placeGarageSlot({
+          slotId: dragState.slotId,
+          column: dragState.targetColumn,
+          row: dragState.targetRow,
+          isRotated: dragState.isRotated,
+        });
+      }
+    } else {
+      setInfoSlotId(dragState.slotId);
     }
 
     setDragState(null);
@@ -211,7 +311,7 @@ export function GarageStashScreen() {
             />
           ))}
 
-          {dragState && (
+          {dragState?.didMove && (
             <div
               className={`pointer-events-none z-10 rounded-xl border-2 border-dashed ${
                 dragState.isValid ? "border-cyan-300 bg-cyan-400/10" : "border-red-400 bg-red-500/10"
@@ -266,9 +366,11 @@ export function GarageStashScreen() {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
         <p className="text-sm text-zinc-400">
-          Drag items inside the grid. The preview turns cyan when the drop is valid and red when blocked. If the normal orientation does not fit, the item will auto-rotate when the rotated size fits.
+          Tap an item to open details. Drag items inside the grid to move them. The preview turns cyan when the drop is valid and red when blocked.
         </p>
       </div>
+
+      {infoSlot && <ItemInfoSheet slot={infoSlot} onClose={() => setInfoSlotId(null)} />}
     </div>
   );
 }
