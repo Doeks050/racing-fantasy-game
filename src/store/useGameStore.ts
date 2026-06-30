@@ -11,6 +11,7 @@ type GameStore = {
   selectDriver: (params: { carId: CarId; driverId: string }) => void;
   equipCarPart: (params: { carId: CarId; slotType: CarPartType; partId: string }) => void;
   equipTeamMember: (params: { slotType: TeamSlotType; memberId: string }) => void;
+  placeGarageSlot: (params: { slotId: string; column: number; row: number; isRotated: boolean }) => void;
   moveGarageSlot: (params: { slotId: string; column: number; row: number }) => void;
   rotateGarageSlot: (params: { slotId: string }) => void;
   resetGameState: () => void;
@@ -32,6 +33,11 @@ export const useGameStore = create<GameStore>((set) => ({
   equipTeamMember: (params) =>
     set((store) => ({
       gameState: LoadoutEngine.equipTeamMember(store.gameState, params),
+    })),
+
+  placeGarageSlot: (params) =>
+    set((store) => ({
+      gameState: InventoryEngine.placeGarageSlot(store.gameState, params),
     })),
 
   moveGarageSlot: (params) =>
