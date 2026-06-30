@@ -22,6 +22,70 @@ export function isGameState(value: unknown): value is GameState {
   return "version" in value && "player" in value && "garage" in value && "race" in value;
 }
 
+export function migrateGameState(savedState: GameState): GameState {
+  const defaultState = createInitialGameState();
+
+  return {
+    ...defaultState,
+    ...savedState,
+    player: {
+      ...defaultState.player,
+      ...savedState.player,
+    },
+    garage: {
+      ...defaultState.garage,
+      ...savedState.garage,
+      inventorySlots: savedState.garage?.inventorySlots ?? defaultState.garage.inventorySlots,
+      ownedDriverIds: savedState.garage?.ownedDriverIds ?? defaultState.garage.ownedDriverIds,
+      ownedStaffIds: savedState.garage?.ownedStaffIds ?? defaultState.garage.ownedStaffIds,
+      ownedPartIds: savedState.garage?.ownedPartIds ?? defaultState.garage.ownedPartIds,
+    },
+    race: {
+      ...defaultState.race,
+      ...savedState.race,
+      activeLoadout: {
+        ...defaultState.race.activeLoadout,
+        ...savedState.race?.activeLoadout,
+        car1: {
+          ...defaultState.race.activeLoadout.car1,
+          ...savedState.race?.activeLoadout?.car1,
+          parts: {
+            ...defaultState.race.activeLoadout.car1.parts,
+            ...savedState.race?.activeLoadout?.car1?.parts,
+          },
+        },
+        car2: {
+          ...defaultState.race.activeLoadout.car2,
+          ...savedState.race?.activeLoadout?.car2,
+          parts: {
+            ...defaultState.race.activeLoadout.car2.parts,
+            ...savedState.race?.activeLoadout?.car2?.parts,
+          },
+        },
+        team: {
+          ...defaultState.race.activeLoadout.team,
+          ...savedState.race?.activeLoadout?.team,
+        },
+      },
+    },
+    economy: {
+      ...defaultState.economy,
+      ...savedState.economy,
+      marketListingIds: savedState.economy?.marketListingIds ?? defaultState.economy.marketListingIds,
+      activeSponsorIds: savedState.economy?.activeSponsorIds ?? defaultState.economy.activeSponsorIds,
+      pendingRewardIds: savedState.economy?.pendingRewardIds ?? defaultState.economy.pendingRewardIds,
+    },
+    progression: {
+      ...defaultState.progression,
+      ...savedState.progression,
+      completedRaceWeekendIds:
+        savedState.progression?.completedRaceWeekendIds ?? defaultState.progression.completedRaceWeekendIds,
+      unlockedFeatureIds: savedState.progression?.unlockedFeatureIds ?? defaultState.progression.unlockedFeatureIds,
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export const LocalStorageSaveAdapter: SaveAdapter = {
   load() {
     if (typeof window === "undefined") {
@@ -36,7 +100,7 @@ export const LocalStorageSaveAdapter: SaveAdapter = {
 
     try {
       const parsed = JSON.parse(raw) as unknown;
-      return isGameState(parsed) ? parsed : null;
+      return isGameState(parsed) ? migrateGameState(parsed) : null;
     } catch {
       return null;
     }
@@ -77,7 +141,9 @@ export const SaveEngine = {
   },
 
   async loadAsync(adapter: AsyncSaveAdapter): Promise<GameState> {
-    return (await adapter.load()) ?? createInitialGameState();
+    const savedState = await adapter.load();
+
+    return savedState ? migrateGameState(savedState) : createInitialGameState();
   },
 
   async saveAsync(state: GameState, adapter: AsyncSaveAdapter) {
