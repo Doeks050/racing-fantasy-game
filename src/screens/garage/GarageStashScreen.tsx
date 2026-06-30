@@ -1,16 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 
 const CELL_HEIGHT_PX = 58;
 const GRID_GAP_PX = 4;
 const TAP_MOVE_THRESHOLD_PX = 8;
-
-function label(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 type DragState = {
   slotId: string;
@@ -26,6 +22,14 @@ type DragState = {
   anchorRow: number;
   didMove: boolean;
 };
+
+function label(value: string) {
+  return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function itemSubtitle(slot: HydratedGarageSlot) {
+  return slot.item.brand ? `${slot.item.brand} · ${label(slot.item.type)}` : label(slot.item.type);
+}
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
@@ -55,7 +59,7 @@ function ItemInfoSheet({ slot, onClose }: { slot: HydratedGarageSlot; onClose: (
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">{slot.item.rarity}</p>
             <h3 className="mt-1 text-2xl font-black text-zinc-100">{slot.item.name}</h3>
-            <p className="mt-1 text-sm text-zinc-400">{label(slot.item.type)}</p>
+            <p className="mt-1 text-sm text-zinc-400">{itemSubtitle(slot)}</p>
           </div>
 
           <button
@@ -100,7 +104,7 @@ export function GarageStashScreen() {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const gameState = useGameStore((store) => store.gameState);
   const placeGarageSlot = useGameStore((store) => store.placeGarageSlot);
-  const slots = InventoryEngine.getHydratedGarageSlots(gameState);
+  const slots = InventoryEngine.getHydratedStashSlots(gameState);
   const rowCount = InventoryEngine.getGridRowCount(slots);
   const infoSlot = slots.find((slot) => slot.slotId === infoSlotId) ?? null;
 
@@ -207,7 +211,7 @@ export function GarageStashScreen() {
     } satisfies DragState;
   }
 
-  function handlePointerDown(event: React.PointerEvent<HTMLButtonElement>, slotId: string) {
+  function handlePointerDown(event: PointerEvent<HTMLButtonElement>, slotId: string) {
     const metrics = getGridMetrics();
     const slot = slots.find((candidate) => candidate.slotId === slotId);
 
@@ -241,7 +245,7 @@ export function GarageStashScreen() {
     });
   }
 
-  function handlePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
+  function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
     if (!dragState) {
       return;
     }
@@ -261,12 +265,14 @@ export function GarageStashScreen() {
     }
   }
 
-  function handlePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
+  function handlePointerUp(event: PointerEvent<HTMLButtonElement>) {
     if (!dragState) {
       return;
     }
 
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
 
     if (dragState.didMove) {
       if (dragState.isValid) {
@@ -287,8 +293,9 @@ export function GarageStashScreen() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Inventory Grid</p>
+        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Storage Grid</p>
         <h2 className="mt-1 text-2xl font-black">Garage Stash</h2>
+        <p className="mt-1 text-sm text-zinc-500">Equipped car parts are mounted on the cars and hidden from stash.</p>
       </div>
 
       <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-2">
@@ -310,6 +317,15 @@ export function GarageStashScreen() {
               }}
             />
           ))}
+
+          {slots.length === 0 && (
+            <div className="pointer-events-none z-10 col-span-6 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
+              <div>
+                <p className="text-sm font-black text-zinc-300">Stash is empty</p>
+                <p className="mt-1 text-xs text-zinc-500">All starter parts are currently mounted on your cars.</p>
+              </div>
+            </div>
+          )}
 
           {dragState?.didMove && (
             <div
@@ -357,7 +373,7 @@ export function GarageStashScreen() {
                   <p className="text-[10px] text-zinc-500">{width}x{height}</p>
                 </div>
                 <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
-                <p className="mt-1 text-[10px] text-zinc-500">{label(slot.item.type)}</p>
+                <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
               </button>
             );
           })}
@@ -366,7 +382,7 @@ export function GarageStashScreen() {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
         <p className="text-sm text-zinc-400">
-          Tap an item to open details. Drag items inside the grid to move them. The preview turns cyan when the drop is valid and red when blocked.
+          Tap a stored item to open details. Drag stored items inside the grid to move them. Mounted car parts are managed from Loadout.
         </p>
       </div>
 
