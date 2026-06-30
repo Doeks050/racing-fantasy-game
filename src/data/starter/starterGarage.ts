@@ -1,4 +1,4 @@
-import type { GameInventorySlot } from "@/engine";
+import type { GameInventorySlot } from "@/engine/GameState";
 
 export const starterGarageInventorySlots: GameInventorySlot[] = [
   { slotId: "slot_chassis_01", entityId: "common_chassis_01", quantity: 1, gridPosition: { column: 0, row: 0 } },
