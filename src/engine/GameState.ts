@@ -29,8 +29,12 @@ export type GarageState = {
 
 export type RaceWeekendState = {
   activeLoadout: RaceLoadout;
+  submittedLoadout?: RaceLoadout;
   currentCircuitId: string;
   currentWeekendId: string;
+  deadlineLabel: string;
+  isSubmitted: boolean;
+  submittedAt?: string;
 };
 
 export type EconomyState = {
@@ -99,6 +103,8 @@ export function createInitialGameState(): GameState {
       activeLoadout: demoLoadout,
       currentCircuitId: "circuit_neon_harbor",
       currentWeekendId: "weekend_neon_harbor_01",
+      deadlineLabel: "Friday 20:00",
+      isSubmitted: false,
     },
     economy: {
       activeMarketTraderId: marketTraders[0]?.id ?? "",
