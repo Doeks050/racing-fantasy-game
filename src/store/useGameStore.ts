@@ -16,6 +16,7 @@ type GameStore = {
   equipCarPart: (params: { carId: CarId; slotType: CarPartType; partId: string }) => void;
   equipTeamMember: (params: { slotType: TeamSlotType; memberId: string }) => void;
   setActiveMarketTrader: (traderId: string) => void;
+  buyMarketListing: (listingId: string) => void;
   placeGarageSlot: (params: { slotId: string; column: number; row: number; isRotated: boolean }) => void;
   moveGarageSlot: (params: { slotId: string; column: number; row: number }) => void;
   rotateGarageSlot: (params: { slotId: string }) => void;
@@ -59,6 +60,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setActiveMarketTrader: (traderId) =>
     set((store) => ({
       gameState: withAutosave(MarketEngine.setActiveTrader(store.gameState, traderId)),
+    })),
+
+  buyMarketListing: (listingId) =>
+    set((store) => ({
+      gameState: withAutosave(MarketEngine.buyListing(store.gameState, listingId)),
     })),
 
   placeGarageSlot: (params) =>
