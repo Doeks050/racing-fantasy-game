@@ -14,6 +14,7 @@ export const RaceEngine = {
       drivers,
       parts: carParts,
       teamMembers,
+      inventorySlots: state.garage.inventorySlots,
     });
   },
 };
