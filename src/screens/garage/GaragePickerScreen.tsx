@@ -1,13 +1,13 @@
 "use client";
 
-import { InventoryEngine } from "@/engine";
+import { InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
-import type { CarPart, GaragePickerMode, TeamMember } from "@/types";
+import type { GaragePickerMode, TeamMember } from "@/types";
 
 type GaragePickerScreenProps = {
   mode: GaragePickerMode;
   onBack: () => void;
-  onSelectCarPart: (part: CarPart) => void;
+  onSelectCarPartSlot: (slot: HydratedGarageSlot) => void;
   onSelectTeamMember: (member: TeamMember) => void;
 };
 
@@ -15,18 +15,29 @@ function label(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function itemSubtitle(slot: HydratedGarageSlot) {
+  return slot.item.brand ? `${slot.item.brand} · ${label(slot.item.type)}` : label(slot.item.type);
+}
+
 export function GaragePickerScreen({
   mode,
   onBack,
-  onSelectCarPart,
+  onSelectCarPartSlot,
   onSelectTeamMember,
 }: GaragePickerScreenProps) {
   const gameState = useGameStore((store) => store.gameState);
   const title = `Select ${label(mode.slotType)}`;
-
-  const carPartItems =
+  const currentInventorySlotId =
     mode.type === "car_part"
-      ? InventoryEngine.getCompatibleCarParts(gameState, mode.slotType)
+      ? gameState.race.activeLoadout[mode.carId].parts[mode.slotType]
+      : undefined;
+
+  const carPartSlots =
+    mode.type === "car_part"
+      ? InventoryEngine.getCompatibleCarPartSlots(gameState, {
+          slotType: mode.slotType,
+          currentInventorySlotId,
+        })
       : [];
 
   const teamItems =
@@ -45,31 +56,49 @@ export function GaragePickerScreen({
         <h2 className="mt-1 text-2xl font-black">{title}</h2>
       </div>
 
-      {carPartItems.map((part) => (
-        <button
-          key={part.id}
-          onClick={() => onSelectCarPart(part)}
-          className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 text-left active:scale-[0.98]"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs uppercase text-cyan-300">{part.rarity}</p>
-              <h3 className="mt-1 text-lg font-bold">{part.name}</h3>
-              <p className="mt-2 text-sm text-zinc-400">{part.description}</p>
-            </div>
-            <p className="text-sm font-bold text-zinc-300">{part.value}</p>
-          </div>
+      {carPartSlots.map((slot) => {
+        const isCurrent = slot.slotId === currentInventorySlotId;
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            {Object.entries(part.stats).map(([stat, value]) => (
-              <div key={stat} className="rounded-xl bg-zinc-950 p-2">
-                <p className="text-[10px] uppercase text-zinc-500">{label(stat)}</p>
-                <p className="text-sm font-bold">{value && value > 0 ? `+${value}` : value}</p>
+        return (
+          <button
+            key={slot.slotId}
+            onClick={() => onSelectCarPartSlot(slot)}
+            className={`rounded-3xl border p-4 text-left active:scale-[0.98] ${
+              isCurrent
+                ? "border-cyan-400 bg-cyan-950/30"
+                : "border-zinc-800 bg-zinc-900"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase text-cyan-300">{slot.item.rarity}</p>
+                <h3 className="mt-1 text-lg font-bold">{slot.item.name}</h3>
+                <p className="mt-1 text-xs text-zinc-500">{itemSubtitle(slot)}</p>
+                <p className="mt-2 text-sm text-zinc-400">{slot.item.description}</p>
               </div>
-            ))}
-          </div>
-        </button>
-      ))}
+              <div className="text-right">
+                <p className="text-sm font-bold text-zinc-300">{slot.item.value}</p>
+                <p className="mt-1 text-[10px] uppercase text-zinc-500">{slot.slotId}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {Object.entries(slot.item.stats).map(([stat, value]) => (
+                <div key={stat} className="rounded-xl bg-zinc-950 p-2">
+                  <p className="text-[10px] uppercase text-zinc-500">{label(stat)}</p>
+                  <p className="text-sm font-bold">{value && value > 0 ? `+${value}` : value}</p>
+                </div>
+              ))}
+            </div>
+
+            {isCurrent && (
+              <p className="mt-3 rounded-xl bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-300">
+                Currently equipped in this slot
+              </p>
+            )}
+          </button>
+        );
+      })}
 
       {teamItems.map((member) => (
         <button
@@ -97,9 +126,9 @@ export function GaragePickerScreen({
         </button>
       ))}
 
-      {carPartItems.length === 0 && teamItems.length === 0 && (
+      {carPartSlots.length === 0 && teamItems.length === 0 && (
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
-          <p className="text-sm text-zinc-400">No compatible owned items found.</p>
+          <p className="text-sm text-zinc-400">No compatible unused owned items found.</p>
         </div>
       )}
     </div>
