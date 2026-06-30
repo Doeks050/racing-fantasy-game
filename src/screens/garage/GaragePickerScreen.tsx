@@ -1,8 +1,10 @@
 "use client";
 
-import { InventoryEngine, type HydratedGarageSlot } from "@/engine";
+import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 import type { GaragePickerMode, TeamMember } from "@/types";
+
+const CELL_HEIGHT_PX = 58;
 
 type GaragePickerScreenProps = {
   mode: GaragePickerMode;
@@ -38,9 +40,10 @@ export function GaragePickerScreen({
     mode.type === "car_part"
       ? InventoryEngine.getCompatibleCarPartSlots(gameState, {
           slotType: mode.slotType,
-          currentInventorySlotId,
         })
       : [];
+
+  const rowCount = InventoryEngine.getGridRowCount(carPartSlots);
 
   const teamItems =
     mode.type === "team_member"
@@ -54,8 +57,15 @@ export function GaragePickerScreen({
       </button>
 
       <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Garage Picker</p>
+        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">
+          {mode.type === "car_part" ? "Garage Stash Picker" : "Garage Picker"}
+        </p>
         <h2 className="mt-1 text-2xl font-black">{title}</h2>
+        {mode.type === "car_part" && (
+          <p className="mt-1 text-sm text-zinc-500">
+            Choose a compatible loose part from your stash grid.
+          </p>
+        )}
       </div>
 
       {mode.type === "car_part" && currentInventorySlotId && (
@@ -71,49 +81,66 @@ export function GaragePickerScreen({
         </button>
       )}
 
-      {carPartSlots.map((slot) => {
-        const isCurrent = slot.slotId === currentInventorySlotId;
-
-        return (
-          <button
-            key={slot.slotId}
-            onClick={() => onSelectCarPartSlot(slot)}
-            className={`rounded-3xl border p-4 text-left active:scale-[0.98] ${
-              isCurrent
-                ? "border-cyan-400 bg-cyan-950/30"
-                : "border-zinc-800 bg-zinc-900"
-            }`}
+      {mode.type === "car_part" && (
+        <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-2">
+          <div
+            className="relative grid gap-1"
+            style={{
+              gridTemplateColumns: `repeat(${GARAGE_GRID_COLUMNS}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${rowCount}, ${CELL_HEIGHT_PX}px)`,
+            }}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase text-cyan-300">{slot.item.rarity}</p>
-                <h3 className="mt-1 text-lg font-bold">{slot.item.name}</h3>
-                <p className="mt-1 text-xs text-zinc-500">{itemSubtitle(slot)}</p>
-                <p className="mt-2 text-sm text-zinc-400">{slot.item.description}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-zinc-300">{slot.item.value}</p>
-                <p className="mt-1 text-[10px] uppercase text-zinc-500">{slot.slotId}</p>
-              </div>
-            </div>
+            {Array.from({ length: GARAGE_GRID_COLUMNS * rowCount }).map((_, index) => (
+              <div
+                key={`cell-${index}`}
+                className="rounded-lg border border-zinc-800/80 bg-zinc-950/50"
+                style={{
+                  gridColumn: (index % GARAGE_GRID_COLUMNS) + 1,
+                  gridRow: Math.floor(index / GARAGE_GRID_COLUMNS) + 1,
+                }}
+              />
+            ))}
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {Object.entries(slot.item.stats).map(([stat, value]) => (
-                <div key={stat} className="rounded-xl bg-zinc-950 p-2">
-                  <p className="text-[10px] uppercase text-zinc-500">{label(stat)}</p>
-                  <p className="text-sm font-bold">{value && value > 0 ? `+${value}` : value}</p>
+            {carPartSlots.length === 0 && (
+              <div className="pointer-events-none z-10 col-span-6 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
+                <div>
+                  <p className="text-sm font-black text-zinc-300">No compatible stash parts</p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Remove the mounted part first or buy a compatible part in the market.
+                  </p>
                 </div>
-              ))}
-            </div>
-
-            {isCurrent && (
-              <p className="mt-3 rounded-xl bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-300">
-                Currently equipped in this slot
-              </p>
+              </div>
             )}
-          </button>
-        );
-      })}
+
+            {carPartSlots.map((slot) => {
+              const isRotated = Boolean(slot.isRotated);
+              const width = isRotated ? slot.item.gridSize.height : slot.item.gridSize.width;
+              const height = isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
+              const column = slot.gridPosition?.column ?? 0;
+              const row = slot.gridPosition?.row ?? 0;
+
+              return (
+                <button
+                  key={slot.slotId}
+                  onClick={() => onSelectCarPartSlot(slot)}
+                  className="z-20 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left shadow-lg active:scale-[0.98]"
+                  style={{
+                    gridColumn: `${column + 1} / span ${width}`,
+                    gridRow: `${row + 1} / span ${height}`,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-1">
+                    <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
+                    <p className="text-[10px] text-zinc-500">{width}x{height}</p>
+                  </div>
+                  <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
+                  <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {teamItems.map((member) => (
         <button
@@ -141,9 +168,9 @@ export function GaragePickerScreen({
         </button>
       ))}
 
-      {carPartSlots.length === 0 && teamItems.length === 0 && !currentInventorySlotId && (
+      {mode.type === "team_member" && teamItems.length === 0 && (
         <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
-          <p className="text-sm text-zinc-400">No compatible unused owned items found.</p>
+          <p className="text-sm text-zinc-400">No compatible owned team members found.</p>
         </div>
       )}
     </div>
