@@ -1,5 +1,6 @@
 import { carParts, teamMembers } from "@/data";
 import type { CarLoadout, CarStats, TeamLoadout, TeamStats } from "@/types";
+import type { GameInventorySlot } from "@/engine";
 
 export const emptyCarStats: CarStats = {
   topSpeed: 0,
@@ -20,9 +21,26 @@ export const emptyTeamStats: TeamStats = {
   dataAnalysis: 0,
 };
 
-export function getCarLoadoutStats(carLoadout: CarLoadout): CarStats {
-  return Object.values(carLoadout.parts).reduce<CarStats>((stats, partId) => {
-    const part = carParts.find((item) => item.id === partId);
+function resolveCarPart(loadoutValue: string | undefined, inventorySlots: GameInventorySlot[] = []) {
+  if (!loadoutValue) {
+    return undefined;
+  }
+
+  const inventorySlot = inventorySlots.find((slot) => slot.slotId === loadoutValue);
+
+  if (inventorySlot) {
+    return carParts.find((item) => item.id === inventorySlot.entityId);
+  }
+
+  return carParts.find((item) => item.id === loadoutValue);
+}
+
+export function getCarLoadoutStats(
+  carLoadout: CarLoadout,
+  inventorySlots: GameInventorySlot[] = [],
+): CarStats {
+  return Object.values(carLoadout.parts).reduce<CarStats>((stats, loadoutValue) => {
+    const part = resolveCarPart(loadoutValue, inventorySlots);
 
     if (!part) {
       return stats;
