@@ -41,7 +41,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_front_wing_01",
     price: 720,
-    stock: 3,
+    stock: 1,
     gridPosition: { column: 0, row: 0 },
   },
   {
@@ -50,7 +50,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_rear_wing_01",
     price: 720,
-    stock: 3,
+    stock: 1,
     gridPosition: { column: 3, row: 0 },
   },
   {
@@ -59,7 +59,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_floor_01",
     price: 900,
-    stock: 2,
+    stock: 1,
     gridPosition: { column: 0, row: 2 },
   },
   {
@@ -68,7 +68,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_engine_01",
     price: 1150,
-    stock: 2,
+    stock: 1,
     gridPosition: { column: 0, row: 0 },
   },
   {
@@ -77,7 +77,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_gearbox_01",
     price: 840,
-    stock: 4,
+    stock: 1,
     gridPosition: { column: 2, row: 0 },
   },
   {
@@ -86,7 +86,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_chassis_01",
     price: 960,
-    stock: 2,
+    stock: 1,
     gridPosition: { column: 0, row: 0 },
   },
   {
@@ -95,7 +95,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_suspension_01",
     price: 780,
-    stock: 4,
+    stock: 1,
     gridPosition: { column: 2, row: 0 },
   },
   {
@@ -104,7 +104,7 @@ export const marketListings: MarketListing[] = [
     kind: "car_part",
     itemId: "common_brakes_01",
     price: 600,
-    stock: 5,
+    stock: 1,
     gridPosition: { column: 4, row: 0 },
   },
   {
