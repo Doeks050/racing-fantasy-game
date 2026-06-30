@@ -1,0 +1,52 @@
+import type { Driver } from "@/types";
+
+export const drivers: Driver[] = [
+  {
+    id: "driver_milo_vance",
+    name: "Milo Vance",
+    rarity: "common",
+    value: 1200,
+    stats: {
+      pace: 58,
+      consistency: 66,
+      raceCraft: 55,
+      awareness: 62,
+      wetSkill: 48,
+      qualifying: 57,
+      tyreManagement: 64,
+      aggression: 52,
+    },
+  },
+  {
+    id: "driver_kira_vale",
+    name: "Kira Vale",
+    rarity: "uncommon",
+    value: 2200,
+    stats: {
+      pace: 68,
+      consistency: 61,
+      raceCraft: 70,
+      awareness: 64,
+      wetSkill: 59,
+      qualifying: 67,
+      tyreManagement: 58,
+      aggression: 72,
+    },
+  },
+  {
+    id: "driver_enzo_rix",
+    name: "Enzo Rix",
+    rarity: "rare",
+    value: 4200,
+    stats: {
+      pace: 77,
+      consistency: 73,
+      raceCraft: 76,
+      awareness: 70,
+      wetSkill: 66,
+      qualifying: 79,
+      tyreManagement: 69,
+      aggression: 74,
+    },
+  },
+];
