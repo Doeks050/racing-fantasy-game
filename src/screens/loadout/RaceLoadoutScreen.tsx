@@ -51,6 +51,7 @@ export function RaceLoadoutScreen() {
   const validation = LoadoutEngine.validateRaceLoadout(gameState);
   const selectDriver = useGameStore((store) => store.selectDriver);
   const equipCarPart = useGameStore((store) => store.equipCarPart);
+  const unequipCarPart = useGameStore((store) => store.unequipCarPart);
   const equipTeamMember = useGameStore((store) => store.equipTeamMember);
 
   function resolvePartName(loadoutValue: string | undefined) {
@@ -90,6 +91,16 @@ export function RaceLoadoutScreen() {
             carId: pickerMode.carId,
             slotType: pickerMode.slotType,
             inventorySlotId: slot.slotId,
+          });
+
+          setPickerMode(null);
+        }}
+        onRemoveCarPart={() => {
+          if (pickerMode.type !== "car_part") return;
+
+          unequipCarPart({
+            carId: pickerMode.carId,
+            slotType: pickerMode.slotType,
           });
 
           setPickerMode(null);
