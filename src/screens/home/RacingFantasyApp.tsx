@@ -40,22 +40,28 @@ const moreItems: { id: Screen; label: string; description: string }[] = [
 export function RacingFantasyApp() {
   const [screen, setScreen] = useState<Screen>("home");
   const hydrateFromSave = useGameStore((store) => store.hydrateFromSave);
+  const resetGameState = useGameStore((store) => store.resetGameState);
   const player = useGameStore((store) => store.gameState.player);
 
   useEffect(() => {
     hydrateFromSave();
   }, [hydrateFromSave]);
 
+  function handleDevReset() {
+    resetGameState();
+    setScreen("home");
+  }
+
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col">
-        <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 backdrop-blur">
+    <main className="h-dvh overflow-hidden bg-zinc-950 text-zinc-100">
+      <div className="mx-auto flex h-full max-w-md flex-col overflow-hidden">
+        <header className="shrink-0 border-b border-zinc-800 bg-zinc-950 px-4 py-4">
           <p className="text-xs uppercase tracking-[0.3em] text-cyan-400">Racing Fantasy</p>
           <h1 className="mt-1 text-2xl font-black">Neon Harbor GP</h1>
           <p className="mt-1 text-xs text-zinc-500">{player.teamName} · {player.credits} credits</p>
         </header>
 
-        <section className="flex-1 px-4 py-4 pb-24">
+        <section className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
           {screen === "home" && (
             <div className="flex flex-col gap-4">
               <div className="rounded-3xl border border-cyan-500/30 bg-zinc-900 p-4">
@@ -99,6 +105,20 @@ export function RacingFantasyApp() {
                   <p className="mt-1 text-sm text-zinc-500">{item.description}</p>
                 </button>
               ))}
+
+              <div className="rounded-3xl border border-red-900/60 bg-red-950/20 p-4">
+                <p className="text-xs uppercase tracking-[0.25em] text-red-300">Developer</p>
+                <h3 className="mt-1 font-black text-zinc-100">Reset local game</h3>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Clears the current local save and rebuilds the default garage, market and loadout state.
+                </p>
+                <button
+                  onClick={handleDevReset}
+                  className="mt-4 w-full rounded-2xl bg-red-500 px-4 py-3 font-black text-white active:scale-[0.98]"
+                >
+                  DEV RESET
+                </button>
+              </div>
             </div>
           )}
 
@@ -111,7 +131,7 @@ export function RacingFantasyApp() {
           {screen === "results" && <RaceResultsScreen />}
         </section>
 
-        <nav className="fixed bottom-0 left-1/2 z-30 grid w-full max-w-md -translate-x-1/2 grid-cols-5 border-t border-zinc-800 bg-zinc-950">
+        <nav className="grid shrink-0 grid-cols-5 border-t border-zinc-800 bg-zinc-950">
           {[
             ["home", "Home"],
             ["loadout", "Loadout"],
