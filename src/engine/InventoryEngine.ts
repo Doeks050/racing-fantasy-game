@@ -47,6 +47,13 @@ function getGarageSlotItem(slot: GameInventorySlot) {
   return carParts.find((part) => part.id === slot.entityId);
 }
 
+function getEquippedCarPartSlotIds(state: GameState) {
+  return [
+    ...Object.values(state.race.activeLoadout.car1.parts),
+    ...Object.values(state.race.activeLoadout.car2.parts),
+  ].filter((slotId): slotId is string => Boolean(slotId));
+}
+
 export const InventoryEngine = {
   getOwnedDrivers(state: GameState): Driver[] {
     return state.garage.ownedDriverIds
@@ -68,6 +75,21 @@ export const InventoryEngine = {
 
   getCompatibleCarParts(state: GameState, slotType: CarPartType): CarPart[] {
     return this.getOwnedCarParts(state).filter((part) => part.type === slotType);
+  },
+
+  getCompatibleCarPartSlots(
+    state: GameState,
+    params: { slotType: CarPartType; currentInventorySlotId?: string },
+  ): HydratedGarageSlot[] {
+    const equippedSlotIds = getEquippedCarPartSlotIds(state);
+
+    return this.getHydratedGarageSlots(state)
+      .filter((slot) => slot.item.type === params.slotType)
+      .filter(
+        (slot) =>
+          slot.slotId === params.currentInventorySlotId ||
+          !equippedSlotIds.includes(slot.slotId),
+      );
   },
 
   getCompatibleTeamMembers(state: GameState, slotType: TeamSlotType): TeamMember[] {
@@ -99,6 +121,10 @@ export const InventoryEngine = {
     }, 0);
 
     return Math.max(GARAGE_MIN_ROWS, occupiedRows + 2);
+  },
+
+  isCarPartSlotEquipped(state: GameState, inventorySlotId: string): boolean {
+    return getEquippedCarPartSlotIds(state).includes(inventorySlotId);
   },
 
   canPlaceGarageSlot(
