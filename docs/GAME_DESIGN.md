@@ -64,6 +64,13 @@ The player should be able to drag items inside the stash grid. Items snap to the
 
 Tapping an item opens an item info screen.
 
+## Item Stacking Rule
+Items do not stack.
+
+If the market or garage contains multiple copies of the same item, each copy must be represented as a separate grid item with its own slot/listing position.
+
+Do not show `x2`, `x3`, stock badges, or stacked quantities on item cards.
+
 ## Market
 Market also uses a 6-column grid system instead of a flat shop list.
 
