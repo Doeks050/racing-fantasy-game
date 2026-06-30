@@ -100,7 +100,7 @@ export function RaceLoadoutScreen() {
   const teamStats = getTeamLoadoutStats(loadout.team);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-4">
       <div className="grid grid-cols-3 gap-2 rounded-2xl bg-zinc-900 p-1">
         {(["car1", "car2", "team"] as Tab[]).map((item) => (
           <button
@@ -255,9 +255,13 @@ export function RaceLoadoutScreen() {
         </>
       )}
 
-      <button className="sticky bottom-16 rounded-2xl bg-cyan-400 px-4 py-4 font-black text-zinc-950">
-        Save Race Loadout
-      </button>
+      <section className="rounded-3xl border border-cyan-500/20 bg-zinc-900 p-4">
+        <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Race Loadout</p>
+        <h3 className="mt-1 text-lg font-black text-zinc-100">Auto-saved</h3>
+        <p className="mt-2 text-sm text-zinc-400">
+          Changes are saved immediately when you select a driver, car part or team member.
+        </p>
+      </section>
     </div>
   );
 }
