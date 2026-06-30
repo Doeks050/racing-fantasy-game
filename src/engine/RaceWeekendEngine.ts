@@ -10,15 +10,15 @@ function touch(state: GameState): GameState {
 
 export const RaceWeekendEngine = {
   getStatusLabel(state: GameState) {
-    return state.race.isSubmitted ? "Submitted" : "Open";
+    return state.race.isSubmitted ? "Confirmed" : "Open";
   },
 
-  canSubmit(state: GameState) {
+  canConfirm(state: GameState) {
     return !state.race.isSubmitted && LoadoutEngine.validateRaceLoadout(state).isReady;
   },
 
-  submitRaceLoadout(state: GameState): GameState {
-    if (!this.canSubmit(state)) {
+  confirmRaceLoadout(state: GameState): GameState {
+    if (!this.canConfirm(state)) {
       return state;
     }
 
