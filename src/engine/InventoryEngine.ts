@@ -1,5 +1,5 @@
-import { carParts, teamMembers } from "@/data";
-import type { CarPart, CarPartType, TeamMember, TeamSlotType } from "@/types";
+import { carParts, drivers, teamMembers } from "@/data";
+import type { CarPart, CarPartType, Driver, TeamMember, TeamSlotType } from "@/types";
 import type { GameInventorySlot, GameState } from "./GameState";
 
 export const GARAGE_GRID_COLUMNS = 6;
@@ -10,6 +10,12 @@ export type HydratedGarageSlot = GameInventorySlot & {
 };
 
 export const InventoryEngine = {
+  getOwnedDrivers(state: GameState): Driver[] {
+    return state.garage.ownedDriverIds
+      .map((driverId) => drivers.find((driver) => driver.id === driverId))
+      .filter((driver): driver is Driver => Boolean(driver));
+  },
+
   getOwnedCarParts(state: GameState): CarPart[] {
     return state.garage.ownedPartIds
       .map((partId) => carParts.find((part) => part.id === partId))
