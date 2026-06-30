@@ -10,14 +10,6 @@ function label(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function listingTypeLabel(listing: HydratedMarketListing) {
-  if (listing.kind === "driver") {
-    return "Driver";
-  }
-
-  return label(listing.item.type);
-}
-
 function listingSubtitle(listing: HydratedMarketListing) {
   if (listing.kind === "driver") {
     return "Driver";
@@ -172,7 +164,7 @@ export function MarketScreen() {
 
       <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-2">
         <div
-          className="grid gap-1"
+          className="relative grid gap-1"
           style={{
             gridTemplateColumns: `repeat(${MARKET_GRID_COLUMNS}, minmax(0, 1fr))`,
             gridTemplateRows: `repeat(${rowCount}, ${CELL_HEIGHT_PX}px)`,
@@ -188,6 +180,15 @@ export function MarketScreen() {
               }}
             />
           ))}
+
+          {listings.length === 0 && (
+            <div className="pointer-events-none z-10 col-span-6 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
+              <div>
+                <p className="text-sm font-black text-zinc-300">No available listings</p>
+                <p className="mt-1 text-xs text-zinc-500">This trader has nothing left to sell right now.</p>
+              </div>
+            </div>
+          )}
 
           {listings.map((listing) => {
             const width = listing.isRotated ? listing.item.gridSize.height : listing.item.gridSize.width;
