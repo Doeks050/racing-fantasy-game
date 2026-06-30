@@ -10,7 +10,6 @@ import {
   homeSponsorPreview,
   homeStandingsPreview,
 } from "@/data/home/homeDashboard";
-import { LoadoutEngine, RaceWeekendEngine } from "@/engine";
 import { RaceLoadoutScreen } from "@/screens/loadout/RaceLoadoutScreen";
 import { GarageStashScreen } from "@/screens/garage/GarageStashScreen";
 import { MarketScreen } from "@/screens/market/MarketScreen";
@@ -94,13 +93,10 @@ export function RacingFantasyApp() {
   const resetGameState = useGameStore((store) => store.resetGameState);
   const gameState = useGameStore((store) => store.gameState);
   const player = gameState.player;
-  const validation = LoadoutEngine.validateRaceLoadout(gameState);
-  const weekendStatus = RaceWeekendEngine.getStatusLabel(gameState);
   const rewardCount = gameState.economy.pendingRewardIds.length;
   const circuit = circuits.find((item) => item.id === gameState.race.currentCircuitId) ?? circuits[0];
   const circuitMeta = getHomeCircuitMeta(gameState.race.currentCircuitId);
   const weekendInfo = getHomeWeekendInfo(gameState.race.currentWeekendId);
-  const readyPercent = Math.round((validation.filledSlots / validation.totalSlots) * 100);
   const deadlines = getHomeDeadlines({
     loadoutDeadlineLabel: gameState.race.deadlineLabel,
     rewardDraftStatus: rewardCount ? "Ready" : "After race",
@@ -202,21 +198,6 @@ export function RacingFantasyApp() {
                   </div>
                 </Panel>
               </div>
-
-              <Panel title="Race Entry" action={weekendStatus}>
-                <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-                  <div className="min-w-0">
-                    <div className="grid grid-cols-[1fr_auto] text-[10px]">
-                      <span className="text-zinc-500">Loadout ready</span>
-                      <span className="font-black text-zinc-100">{validation.filledSlots}/{validation.totalSlots}</span>
-                    </div>
-                    <div className="mt-2"><ProgressBar value={readyPercent} /></div>
-                  </div>
-                  <button onClick={() => setScreen(validation.isReady ? "raceWeekend" : "loadout")} className="rounded-md bg-red-600 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white active:scale-95">
-                    {validation.isReady ? "Confirm" : "Fix"}
-                  </button>
-                </div>
-              </Panel>
 
               <Panel title="Standings" action="Global">
                 <div className="grid gap-1.5">
