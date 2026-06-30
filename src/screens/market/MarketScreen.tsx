@@ -57,14 +57,10 @@ function MarketItemInfoSheet({ listing, onClose }: { listing: HydratedMarketList
 
         <p className="mt-4 text-sm leading-6 text-zinc-300">{description}</p>
 
-        <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+        <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Price</p>
             <p className="font-black text-cyan-300">{listing.price}</p>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
-            <p className="text-[10px] uppercase text-zinc-500">Stock</p>
-            <p className="font-black text-cyan-300">{listing.stock}</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Grid</p>
@@ -169,7 +165,7 @@ export function MarketScreen() {
               >
                 <div className="flex items-start justify-between gap-1">
                   <p className="text-[10px] uppercase text-cyan-300">{listing.item.rarity}</p>
-                  <p className="text-[10px] text-zinc-500">x{listing.stock}</p>
+                  <p className="text-[10px] text-zinc-500">{width}x{height}</p>
                 </div>
                 <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{listing.item.name}</p>
                 <p className="mt-1 text-[10px] text-zinc-500">{typeLabel}</p>
@@ -182,7 +178,7 @@ export function MarketScreen() {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
         <p className="text-sm text-zinc-400">
-          Tap a market item to open info. Buy flow will be connected through MarketEngine, so purchases update credits and Garage Stash safely.
+          Tap a market item to open info. Items do not stack; multiple copies must be separate grid listings.
         </p>
       </div>
 
