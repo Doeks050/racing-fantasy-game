@@ -4,10 +4,9 @@ import { useState } from "react";
 import { RaceLoadoutScreen } from "@/screens/loadout/RaceLoadoutScreen";
 import { GarageStashScreen } from "@/screens/garage/GarageStashScreen";
 import { MarketScreen } from "@/screens/market/MarketScreen";
-import { RewardDraftScreen } from "@/screens/rewards/RewardDraftScreen";
 import { StandingsScreen } from "@/screens/standings/StandingsScreen";
 
-type Screen = "home" | "loadout" | "garage" | "market" | "rewards" | "standings";
+type Screen = "home" | "loadout" | "garage" | "market" | "standings";
 
 export function RacingFantasyApp() {
   const [screen, setScreen] = useState<Screen>("home");
@@ -40,7 +39,6 @@ export function RacingFantasyApp() {
               <div className="grid grid-cols-2 gap-3">
                 <button onClick={() => setScreen("garage")} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left">Garage Stash</button>
                 <button onClick={() => setScreen("market")} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left">Market</button>
-                <button onClick={() => setScreen("rewards")} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left">Reward Draft</button>
                 <button onClick={() => setScreen("standings")} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left">Standings</button>
               </div>
             </div>
@@ -49,7 +47,6 @@ export function RacingFantasyApp() {
           {screen === "loadout" && <RaceLoadoutScreen />}
           {screen === "garage" && <GarageStashScreen />}
           {screen === "market" && <MarketScreen />}
-          {screen === "rewards" && <RewardDraftScreen />}
           {screen === "standings" && <StandingsScreen />}
         </section>
 
