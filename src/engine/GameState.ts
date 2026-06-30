@@ -1,4 +1,4 @@
-import { demoLoadout } from "@/data";
+import { demoLoadout, marketListings, marketTraders } from "@/data";
 import type { RaceLoadout } from "@/types";
 
 export type GameInventorySlot = {
@@ -34,6 +34,7 @@ export type RaceWeekendState = {
 };
 
 export type EconomyState = {
+  activeMarketTraderId: string;
   marketListingIds: string[];
   activeSponsorIds: string[];
   pendingRewardIds: string[];
@@ -100,7 +101,8 @@ export function createInitialGameState(): GameState {
       currentWeekendId: "weekend_neon_harbor_01",
     },
     economy: {
-      marketListingIds: [],
+      activeMarketTraderId: marketTraders[0]?.id ?? "",
+      marketListingIds: marketListings.map((listing) => listing.id),
       activeSponsorIds: [],
       pendingRewardIds: [],
     },
