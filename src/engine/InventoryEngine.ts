@@ -179,8 +179,14 @@ export const InventoryEngine = {
       return false;
     }
 
+    const equippedSlotIds = getEquippedCarPartSlotIds(state);
+
     return state.garage.inventorySlots.every((slot) => {
-      if (slot.slotId === params.slotId || !slot.gridPosition) {
+      if (
+        slot.slotId === params.slotId ||
+        !slot.gridPosition ||
+        equippedSlotIds.includes(slot.slotId)
+      ) {
         return true;
       }
 
