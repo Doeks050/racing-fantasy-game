@@ -5,6 +5,7 @@ import { carParts, demoLoadout, drivers, teamMembers } from "@/data";
 import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
 import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
 import type { CarPart, Driver, GaragePickerMode, RaceLoadout, TeamMember } from "@/types";
+import { getCarLoadoutStats, getOverallScore, getTeamLoadoutStats, meterValue } from "@/lib/stats/loadoutStats";
 
 type Tab = "car1" | "car2" | "team";
 
@@ -96,6 +97,8 @@ export function RaceLoadoutScreen() {
 
   const car = tab === "car1" ? loadout.car1 : loadout.car2;
   const driver = drivers.find((item) => item.id === car?.driverId);
+  const carStats = tab !== "team" ? getCarLoadoutStats(car) : null;
+  const teamStats = getTeamLoadoutStats(loadout.team);
 
   return (
     <div className="flex flex-col gap-4">
@@ -161,17 +164,25 @@ export function RaceLoadoutScreen() {
           <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
             <h3 className="font-bold">Car Performance</h3>
             <div className="mt-3 grid gap-2">
-              {["Top Speed", "Acceleration", "Cornering", "Braking", "Stability", "Reliability"].map((stat, i) => (
-                <div key={stat}>
-                  <div className="flex justify-between text-xs text-zinc-400">
-                    <span>{stat}</span>
-                    <span>{62 + i * 4}</span>
+              {carStats &&
+                Object.entries(carStats).map(([stat, value]) => (
+                  <div key={stat}>
+                    <div className="flex justify-between text-xs text-zinc-400">
+                      <span>{label(stat)}</span>
+                      <span>{value}</span>
+                    </div>
+                    <div className="mt-1 h-2 rounded-full bg-zinc-800">
+                      <div className="h-2 rounded-full bg-cyan-400" style={{ width: `${meterValue(value)}%` }} />
+                    </div>
                   </div>
-                  <div className="mt-1 h-2 rounded-full bg-zinc-800">
-                    <div className="h-2 rounded-full bg-cyan-400" style={{ width: `${62 + i * 4}%` }} />
-                  </div>
+                ))}
+
+              {carStats && (
+                <div className="mt-4 rounded-2xl border border-cyan-500/30 bg-zinc-950 p-3">
+                  <p className="text-xs uppercase text-zinc-500">Overall Car Rating</p>
+                  <p className="text-3xl font-black text-cyan-300">{getOverallScore(carStats)}</p>
                 </div>
-              ))}
+              )}
             </div>
           </section>
 
@@ -219,17 +230,22 @@ export function RaceLoadoutScreen() {
           <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
             <h3 className="font-bold">Team Performance</h3>
             <div className="mt-3 grid gap-2">
-              {["Pit Stop Speed", "Strategy", "Setup Quality", "Reliability Support", "Data Analysis"].map((stat, i) => (
+              {Object.entries(teamStats).map(([stat, value]) => (
                 <div key={stat}>
                   <div className="flex justify-between text-xs text-zinc-400">
-                    <span>{stat}</span>
-                    <span>{55 + i * 7}</span>
+                    <span>{label(stat)}</span>
+                    <span>{value}</span>
                   </div>
                   <div className="mt-1 h-2 rounded-full bg-zinc-800">
-                    <div className="h-2 rounded-full bg-cyan-400" style={{ width: `${55 + i * 7}%` }} />
+                    <div className="h-2 rounded-full bg-cyan-400" style={{ width: `${meterValue(value)}%` }} />
                   </div>
                 </div>
               ))}
+
+              <div className="mt-4 rounded-2xl border border-cyan-500/30 bg-zinc-950 p-3">
+                <p className="text-xs uppercase text-zinc-500">Overall Team Rating</p>
+                <p className="text-3xl font-black text-cyan-300">{getOverallScore(teamStats)}</p>
+              </div>
             </div>
           </section>
         </>
