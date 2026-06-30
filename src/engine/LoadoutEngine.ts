@@ -11,6 +11,13 @@ function touch(state: GameState): GameState {
   };
 }
 
+function getEquippedCarPartSlotIds(state: GameState) {
+  return [
+    ...Object.values(state.race.activeLoadout.car1.parts),
+    ...Object.values(state.race.activeLoadout.car2.parts),
+  ].filter((slotId): slotId is string => Boolean(slotId));
+}
+
 export const LoadoutEngine = {
   selectDriver(state: GameState, params: { carId: CarId; driverId: string }): GameState {
     const driverExists = drivers.some((driver) => driver.id === params.driverId);
@@ -37,12 +44,23 @@ export const LoadoutEngine = {
 
   equipCarPart(
     state: GameState,
-    params: { carId: CarId; slotType: CarPartType; partId: string },
+    params: { carId: CarId; slotType: CarPartType; inventorySlotId: string },
   ): GameState {
-    const part = carParts.find((candidate) => candidate.id === params.partId);
-    const ownsPart = state.garage.ownedPartIds.includes(params.partId);
+    const inventorySlot = state.garage.inventorySlots.find(
+      (candidate) => candidate.slotId === params.inventorySlotId,
+    );
+    const part = carParts.find((candidate) => candidate.id === inventorySlot?.entityId);
 
-    if (!part || !ownsPart || part.type !== params.slotType) {
+    if (!inventorySlot || !part || part.type !== params.slotType) {
+      return state;
+    }
+
+    const currentSlotId = state.race.activeLoadout[params.carId].parts[params.slotType];
+    const isUsedElsewhere = getEquippedCarPartSlotIds(state).some(
+      (slotId) => slotId === params.inventorySlotId && slotId !== currentSlotId,
+    );
+
+    if (isUsedElsewhere) {
       return state;
     }
 
@@ -56,7 +74,7 @@ export const LoadoutEngine = {
             ...state.race.activeLoadout[params.carId],
             parts: {
               ...state.race.activeLoadout[params.carId].parts,
-              [params.slotType]: params.partId,
+              [params.slotType]: params.inventorySlotId,
             },
           },
         },
