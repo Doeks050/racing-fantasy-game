@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { carParts, drivers, teamMembers } from "@/data";
+import { LoadoutEngine } from "@/engine";
 import { getCarLoadoutStats, getOverallScore, getTeamLoadoutStats, meterValue } from "@/lib/stats/loadoutStats";
 import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
 import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
@@ -47,6 +48,7 @@ export function RaceLoadoutScreen() {
   const gameState = useGameStore((store) => store.gameState);
   const loadout = gameState.race.activeLoadout;
   const inventorySlots = gameState.garage.inventorySlots;
+  const validation = LoadoutEngine.validateRaceLoadout(gameState);
   const selectDriver = useGameStore((store) => store.selectDriver);
   const equipCarPart = useGameStore((store) => store.equipCarPart);
   const equipTeamMember = useGameStore((store) => store.equipTeamMember);
@@ -114,6 +116,38 @@ export function RaceLoadoutScreen() {
 
   return (
     <div className="flex flex-col gap-4 pb-4">
+      <section className={`rounded-3xl border p-4 ${validation.isReady ? "border-cyan-500/30 bg-cyan-950/20" : "border-amber-500/30 bg-amber-950/20"}`}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Race Ready Check</p>
+            <h2 className="mt-1 text-xl font-black text-zinc-100">
+              {validation.isReady ? "Loadout Complete" : "Loadout Incomplete"}
+            </h2>
+          </div>
+          <p className="rounded-2xl bg-zinc-950 px-3 py-2 text-sm font-black text-cyan-300">
+            {validation.filledSlots}/{validation.totalSlots}
+          </p>
+        </div>
+
+        {!validation.isReady && (
+          <div className="mt-3 rounded-2xl bg-zinc-950/70 p-3">
+            <p className="text-xs font-bold uppercase text-amber-300">Missing</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {validation.missing.slice(0, 6).map((item) => (
+                <span key={item} className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] text-amber-200">
+                  {item}
+                </span>
+              ))}
+              {validation.missing.length > 6 && (
+                <span className="rounded-full bg-zinc-800 px-2 py-1 text-[11px] text-zinc-400">
+                  +{validation.missing.length - 6} more
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
       <div className="grid grid-cols-3 gap-2 rounded-2xl bg-zinc-900 p-1">
         {(["car1", "car2", "team"] as Tab[]).map((item) => (
           <button
