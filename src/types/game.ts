@@ -68,6 +68,7 @@ export type Driver = {
   name: string;
   rarity: Rarity;
   value: number;
+  gridSize: GridSize;
   stats: DriverStats;
 };
 
@@ -93,14 +94,15 @@ export type Circuit = {
   wetChance: number;
 };
 
-export type MarketListingKind = "car_part";
+export type MarketListingKind = "car_part" | "driver";
 
 export type MarketTrader = {
   id: string;
   name: string;
   description: string;
   categoryLabel: string;
-  partTypes: CarPartType[];
+  listingKinds: MarketListingKind[];
+  partTypes?: CarPartType[];
 };
 
 export type MarketListing = {
