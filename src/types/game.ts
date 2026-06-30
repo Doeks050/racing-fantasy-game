@@ -56,6 +56,7 @@ export type CarPart = {
   id: string;
   name: string;
   type: CarPartType;
+  brand?: string;
   rarity: Rarity;
   value: number;
   gridSize: GridSize;
