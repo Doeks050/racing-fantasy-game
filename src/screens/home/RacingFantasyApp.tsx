@@ -181,10 +181,7 @@ export function RacingFantasyApp() {
         <section className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3">
           {screen === "home" && (
             <div className="grid gap-3 pb-3">
-              <section
-                className="relative min-h-[238px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 bg-cover bg-center shadow-2xl shadow-black"
-                style={{ backgroundImage: `url(${circuit.heroImage})` }}
-              >
+              <section className="relative min-h-[238px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 shadow-2xl shadow-black">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_28%,rgba(239,68,68,0.22),transparent_34%),linear-gradient(180deg,rgba(13,15,18,0.35),#050607_90%)]" />
                 <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_50%,transparent_100%)] opacity-50" />
                 <div className="absolute bottom-9 left-6 h-14 w-56 skew-x-[-18deg] rounded-md border border-red-500/30 bg-black/70 shadow-[0_0_45px_rgba(239,68,68,0.24)]" />
