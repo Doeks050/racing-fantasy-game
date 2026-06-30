@@ -9,6 +9,44 @@ export type HydratedGarageSlot = GameInventorySlot & {
   item: CarPart;
 };
 
+type GridRect = {
+  column: number;
+  row: number;
+  width: number;
+  height: number;
+};
+
+function touch(state: GameState): GameState {
+  return {
+    ...state,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function getSlotSize(slot: GameInventorySlot, item: CarPart) {
+  if (!slot.isRotated) {
+    return item.gridSize;
+  }
+
+  return {
+    width: item.gridSize.height,
+    height: item.gridSize.width,
+  };
+}
+
+function doRectanglesOverlap(a: GridRect, b: GridRect) {
+  return !(
+    a.column + a.width <= b.column ||
+    b.column + b.width <= a.column ||
+    a.row + a.height <= b.row ||
+    b.row + b.height <= a.row
+  );
+}
+
+function getGarageSlotItem(slot: GameInventorySlot) {
+  return carParts.find((part) => part.id === slot.entityId);
+}
+
 export const InventoryEngine = {
   getOwnedDrivers(state: GameState): Driver[] {
     return state.garage.ownedDriverIds
@@ -39,7 +77,7 @@ export const InventoryEngine = {
   getHydratedGarageSlots(state: GameState): HydratedGarageSlot[] {
     return state.garage.inventorySlots
       .map((slot) => {
-        const item = carParts.find((part) => part.id === slot.entityId);
+        const item = getGarageSlotItem(slot);
 
         if (!item) {
           return undefined;
@@ -61,5 +99,144 @@ export const InventoryEngine = {
     }, 0);
 
     return Math.max(GARAGE_MIN_ROWS, occupiedRows + 2);
+  },
+
+  canPlaceGarageSlot(
+    state: GameState,
+    params: { slotId: string; column: number; row: number; isRotated?: boolean },
+  ): boolean {
+    const movingSlot = state.garage.inventorySlots.find((slot) => slot.slotId === params.slotId);
+
+    if (!movingSlot) {
+      return false;
+    }
+
+    const movingItem = getGarageSlotItem(movingSlot);
+
+    if (!movingItem) {
+      return false;
+    }
+
+    const candidateSlot: GameInventorySlot = {
+      ...movingSlot,
+      gridPosition: {
+        column: params.column,
+        row: params.row,
+      },
+      isRotated: params.isRotated ?? movingSlot.isRotated,
+    };
+
+    const movingSize = getSlotSize(candidateSlot, movingItem);
+    const movingRect: GridRect = {
+      column: params.column,
+      row: params.row,
+      width: movingSize.width,
+      height: movingSize.height,
+    };
+
+    if (
+      movingRect.column < 0 ||
+      movingRect.row < 0 ||
+      movingRect.column + movingRect.width > GARAGE_GRID_COLUMNS
+    ) {
+      return false;
+    }
+
+    return state.garage.inventorySlots.every((slot) => {
+      if (slot.slotId === params.slotId || !slot.gridPosition) {
+        return true;
+      }
+
+      const item = getGarageSlotItem(slot);
+
+      if (!item) {
+        return true;
+      }
+
+      const size = getSlotSize(slot, item);
+      const rect: GridRect = {
+        column: slot.gridPosition.column,
+        row: slot.gridPosition.row,
+        width: size.width,
+        height: size.height,
+      };
+
+      return !doRectanglesOverlap(movingRect, rect);
+    });
+  },
+
+  moveGarageSlot(
+    state: GameState,
+    params: { slotId: string; column: number; row: number },
+  ): GameState {
+    const slot = state.garage.inventorySlots.find((candidate) => candidate.slotId === params.slotId);
+
+    if (!slot) {
+      return state;
+    }
+
+    const canPlace = this.canPlaceGarageSlot(state, {
+      slotId: params.slotId,
+      column: params.column,
+      row: params.row,
+      isRotated: slot.isRotated,
+    });
+
+    if (!canPlace) {
+      return state;
+    }
+
+    return touch({
+      ...state,
+      garage: {
+        ...state.garage,
+        inventorySlots: state.garage.inventorySlots.map((candidate) =>
+          candidate.slotId === params.slotId
+            ? {
+                ...candidate,
+                gridPosition: {
+                  column: params.column,
+                  row: params.row,
+                },
+              }
+            : candidate,
+        ),
+      },
+    });
+  },
+
+  rotateGarageSlot(state: GameState, params: { slotId: string }): GameState {
+    const slot = state.garage.inventorySlots.find((candidate) => candidate.slotId === params.slotId);
+
+    if (!slot?.gridPosition) {
+      return state;
+    }
+
+    const nextRotation = !slot.isRotated;
+    const canPlace = this.canPlaceGarageSlot(state, {
+      slotId: params.slotId,
+      column: slot.gridPosition.column,
+      row: slot.gridPosition.row,
+      isRotated: nextRotation,
+    });
+
+    if (!canPlace) {
+      return state;
+    }
+
+    return touch({
+      ...state,
+      garage: {
+        ...state.garage,
+        inventorySlots: state.garage.inventorySlots.map((candidate) =>
+          candidate.slotId === params.slotId
+            ? {
+                ...candidate,
+                isRotated: nextRotation,
+              }
+            : candidate,
+        ),
+      },
+    });
   },
 };
