@@ -18,6 +18,14 @@ function listingTypeLabel(listing: HydratedMarketListing) {
   return label(listing.item.type);
 }
 
+function listingSubtitle(listing: HydratedMarketListing) {
+  if (listing.kind === "driver") {
+    return "Driver";
+  }
+
+  return listing.item.brand ? `${listing.item.brand} · ${label(listing.item.type)}` : label(listing.item.type);
+}
+
 function StatPill({ stat, value }: { stat: string; value: number }) {
   return (
     <div className="rounded-xl bg-zinc-950 p-2">
@@ -64,7 +72,7 @@ function MarketItemInfoSheet({
           <div>
             <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">{listing.trader.name}</p>
             <h3 className="mt-1 text-2xl font-black text-zinc-100">{listing.item.name}</h3>
-            <p className="mt-1 text-sm text-zinc-400">{listingTypeLabel(listing)} · {listing.item.rarity}</p>
+            <p className="mt-1 text-sm text-zinc-400">{listingSubtitle(listing)} · {listing.item.rarity}</p>
           </div>
 
           <button
@@ -184,7 +192,7 @@ export function MarketScreen() {
           {listings.map((listing) => {
             const width = listing.isRotated ? listing.item.gridSize.height : listing.item.gridSize.width;
             const height = listing.isRotated ? listing.item.gridSize.width : listing.item.gridSize.height;
-            const typeLabel = listingTypeLabel(listing);
+            const typeLabel = listingSubtitle(listing);
 
             return (
               <button
