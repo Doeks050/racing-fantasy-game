@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { createInitialGameState, InventoryEngine, LoadoutEngine, MarketEngine, RaceWeekendEngine, SaveEngine, type GameState } from "@/engine";
+import { RewardEngine } from "@/engine/RewardEngine";
 import type { CarPartType, TeamSlotType } from "@/types";
 
 type CarId = "car1" | "car2";
@@ -19,6 +20,7 @@ type GameStore = {
   buyMarketListing: (listingId: string) => void;
   confirmRaceLoadout: () => void;
   completeRaceWeekend: () => void;
+  chooseRewardDraftOption: (rewardId: string) => void;
   placeGarageSlot: (params: { slotId: string; column: number; row: number; isRotated: boolean }) => void;
   moveGarageSlot: (params: { slotId: string; column: number; row: number }) => void;
   rotateGarageSlot: (params: { slotId: string }) => void;
@@ -77,6 +79,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   completeRaceWeekend: () =>
     set((store) => ({
       gameState: withAutosave(RaceWeekendEngine.completeRaceWeekend(store.gameState)),
+    })),
+
+  chooseRewardDraftOption: (rewardId) =>
+    set((store) => ({
+      gameState: withAutosave(RewardEngine.chooseReward(store.gameState, rewardId)),
     })),
 
   placeGarageSlot: (params) =>
