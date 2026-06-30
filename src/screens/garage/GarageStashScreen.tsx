@@ -9,6 +9,7 @@ function label(value: string) {
 
 export function GarageStashScreen() {
   const gameState = useGameStore((store) => store.gameState);
+  const rotateGarageSlot = useGameStore((store) => store.rotateGarageSlot);
   const slots = InventoryEngine.getHydratedGarageSlots(gameState);
   const rowCount = InventoryEngine.getGridRowCount(slots);
 
@@ -36,13 +37,17 @@ export function GarageStashScreen() {
             return (
               <button
                 key={slot.slotId}
+                onClick={() => rotateGarageSlot({ slotId: slot.slotId })}
                 className="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left active:scale-[0.98]"
                 style={{
                   gridColumn: `${column + 1} / span ${width}`,
                   gridRow: `${row + 1} / span ${height}`,
                 }}
               >
-                <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
+                <div className="flex items-start justify-between gap-1">
+                  <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
+                  <p className="text-[10px] text-zinc-600">{width}x{height}</p>
+                </div>
                 <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
                 <p className="mt-1 text-[10px] text-zinc-500">{label(slot.item.type)}</p>
               </button>
@@ -53,7 +58,7 @@ export function GarageStashScreen() {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
         <p className="text-sm text-zinc-400">
-          Items shown here now come from <span className="text-cyan-300">GameState.garage.inventorySlots</span>.
+          Tap an item to rotate it. The engine blocks rotation when the item would overlap another item or leave the grid.
         </p>
       </div>
     </div>
