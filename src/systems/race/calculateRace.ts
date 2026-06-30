@@ -11,6 +11,10 @@ import type {
 } from "@/types";
 import type { GameInventorySlot } from "@/engine";
 
+const PERFORMANCE_TO_TIME_FACTOR = 0.0015;
+const FASTEST_TIME_MODIFIER = 0.92;
+const SLOWEST_TIME_MODIFIER = 1.12;
+
 const emptyCarStats: CarStats = {
   topSpeed: 0,
   acceleration: 0,
@@ -51,6 +55,14 @@ function addTeamStats(base: TeamStats, add: Partial<TeamStats>) {
     reliabilitySupport: base.reliabilitySupport + (add.reliabilitySupport ?? 0),
     dataAnalysis: base.dataAnalysis + (add.dataAnalysis ?? 0),
   };
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function round2(value: number) {
+  return Math.round(value * 100) / 100;
 }
 
 function resolveCarPart(
@@ -116,6 +128,54 @@ function scoreWeightedStats(
   }, 0);
 }
 
+function calculateSectorTimeMs(referenceSectorTimeMs: number, sectorRating: number, benchmarkRating: number) {
+  const ratingDelta = sectorRating - benchmarkRating;
+  const modifier = clamp(
+    1 - ratingDelta * PERFORMANCE_TO_TIME_FACTOR,
+    FASTEST_TIME_MODIFIER,
+    SLOWEST_TIME_MODIFIER,
+  );
+
+  return Math.round(referenceSectorTimeMs * modifier);
+}
+
+function calculateRaceTimeModifiers(params: {
+  circuit: Circuit;
+  carStats: CarStats;
+  driver: Driver;
+  teamStats: TeamStats;
+}) {
+  const tyreLossMs = Math.round(
+    Math.max(
+      0,
+      params.circuit.tyreWear - params.carStats.tyreManagement - params.driver.stats.tyreManagement * 0.4,
+    ) * 12,
+  );
+
+  const mistakeLossMs = Math.round(
+    Math.max(0, 70 - params.driver.stats.consistency - params.carStats.stability * 0.2) * 9,
+  );
+
+  const reliabilityLossMs = Math.round(
+    Math.max(
+      0,
+      params.circuit.reliabilityStress - params.carStats.reliability - params.teamStats.reliabilitySupport * 0.5,
+    ) * 10,
+  );
+
+  const pitStrategyGainMs = Math.round(
+    (params.teamStats.pitStopSpeed * 0.12 + params.teamStats.strategy * 0.18 + params.teamStats.dataAnalysis * 0.08) *
+      10,
+  );
+
+  return {
+    tyreLossMs,
+    mistakeLossMs,
+    reliabilityLossMs,
+    pitStrategyGainMs,
+  };
+}
+
 function calculateCarRaceScore(
   carLoadout: CarLoadout,
   circuit: Circuit,
@@ -130,6 +190,16 @@ function calculateCarRaceScore(
     return {
       totalScore: 0,
       sectorScores: [0, 0, 0] as [number, number, number],
+      sectorRatings: [0, 0, 0] as [number, number, number],
+      sectorTimesMs: [0, 0, 0] as [number, number, number],
+      lapTimeMs: 0,
+      projectedRaceTimeMs: 0,
+      raceTimeModifiers: {
+        tyreLossMs: 0,
+        mistakeLossMs: 0,
+        reliabilityLossMs: 0,
+        pitStrategyGainMs: 0,
+      },
       carStats: emptyCarStats,
       driver: undefined,
     };
@@ -137,37 +207,36 @@ function calculateCarRaceScore(
 
   const carStats = getCarStats(carLoadout, parts, inventorySlots);
 
-  const sectorScores = circuit.sectors.map((sector) =>
+  const sectorRatings = circuit.sectors.map((sector) =>
     scoreWeightedStats(sector, carStats, driver, teamStats),
   ) as [number, number, number];
 
-  const baseScore = sectorScores.reduce((sum, score) => sum + score, 0);
+  const sectorTimesMs = sectorRatings.map((rating, index) =>
+    calculateSectorTimeMs(circuit.referenceSectorTimesMs[index], rating, circuit.benchmarkRating),
+  ) as [number, number, number];
 
-  const pitStrategyScore =
-    teamStats.pitStopSpeed * 0.12 + teamStats.strategy * 0.18 + teamStats.dataAnalysis * 0.08;
+  const cleanLapTimeMs = sectorTimesMs.reduce((sum, time) => sum + time, 0);
+  const raceTimeModifiers = calculateRaceTimeModifiers({ circuit, carStats, driver, teamStats });
 
-  const reliabilityScore =
-    carStats.reliability * 0.2 +
-    teamStats.reliabilitySupport * 0.18 -
-    circuit.reliabilityStress * 0.08;
+  const lapTimeMs = Math.max(
+    0,
+    cleanLapTimeMs +
+      raceTimeModifiers.tyreLossMs +
+      raceTimeModifiers.mistakeLossMs +
+      raceTimeModifiers.reliabilityLossMs -
+      raceTimeModifiers.pitStrategyGainMs,
+  );
 
-  const tyrePenalty =
-    Math.max(0, circuit.tyreWear - carStats.tyreManagement - driver.stats.tyreManagement * 0.4) *
-    0.08;
-
-  const mistakePenalty =
-    Math.max(0, 70 - driver.stats.consistency - carStats.stability * 0.2) * 0.06;
-
-  const totalScore =
-    baseScore + pitStrategyScore + reliabilityScore - tyrePenalty - mistakePenalty;
+  const totalScore = circuit.referenceLapTimeMs / Math.max(1, lapTimeMs) * 100;
 
   return {
-    totalScore: Math.round(totalScore * 100) / 100,
-    sectorScores: sectorScores.map((score) => Math.round(score * 100) / 100) as [
-      number,
-      number,
-      number,
-    ],
+    totalScore: round2(totalScore),
+    sectorScores: sectorRatings.map(round2) as [number, number, number],
+    sectorRatings: sectorRatings.map(round2) as [number, number, number],
+    sectorTimesMs,
+    lapTimeMs,
+    projectedRaceTimeMs: lapTimeMs * circuit.laps,
+    raceTimeModifiers,
     carStats,
     driver,
   };
@@ -202,7 +271,8 @@ export function calculateRaceResult(params: {
     teamStats,
   );
 
-  const totalTeamScore = Math.round((car1.totalScore + car2.totalScore) * 100) / 100;
+  const totalTeamScore = round2(car1.totalScore + car2.totalScore);
+  const combinedProjectedRaceTimeMs = car1.projectedRaceTimeMs + car2.projectedRaceTimeMs;
 
   return {
     circuit: params.circuit,
@@ -210,5 +280,6 @@ export function calculateRaceResult(params: {
     car1,
     car2,
     totalTeamScore,
+    combinedProjectedRaceTimeMs,
   };
 }
