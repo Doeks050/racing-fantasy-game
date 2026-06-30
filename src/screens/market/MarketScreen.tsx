@@ -27,11 +27,31 @@ function StatPill({ stat, value }: { stat: string; value: number }) {
   );
 }
 
-function MarketItemInfoSheet({ listing, onClose }: { listing: HydratedMarketListing; onClose: () => void }) {
+function MarketItemInfoSheet({
+  listing,
+  credits,
+  onBuy,
+  onClose,
+}: {
+  listing: HydratedMarketListing;
+  credits: number;
+  onBuy: (listingId: string) => void;
+  onClose: () => void;
+}) {
   const width = listing.isRotated ? listing.item.gridSize.height : listing.item.gridSize.width;
   const height = listing.isRotated ? listing.item.gridSize.width : listing.item.gridSize.height;
   const description = listing.kind === "car_part" ? listing.item.description : "Driver contract available through the Driver Agency.";
   const stats = listing.kind === "car_part" ? listing.item.stats : listing.item.stats;
+  const canAfford = credits >= listing.price;
+
+  function handleBuy() {
+    if (!canAfford) {
+      return;
+    }
+
+    onBuy(listing.id);
+    onClose();
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-3 pb-3">
@@ -57,10 +77,14 @@ function MarketItemInfoSheet({ listing, onClose }: { listing: HydratedMarketList
 
         <p className="mt-4 text-sm leading-6 text-zinc-300">{description}</p>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+        <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Price</p>
             <p className="font-black text-cyan-300">{listing.price}</p>
+          </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
+            <p className="text-[10px] uppercase text-zinc-500">Your Credits</p>
+            <p className="font-black text-cyan-300">{credits}</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Grid</p>
@@ -74,8 +98,16 @@ function MarketItemInfoSheet({ listing, onClose }: { listing: HydratedMarketList
           ))}
         </div>
 
-        <button className="mt-4 w-full rounded-2xl bg-cyan-400 px-4 py-4 font-black text-zinc-950 active:scale-[0.98]">
-          Buy for {listing.price} credits
+        <button
+          onClick={handleBuy}
+          disabled={!canAfford}
+          className={`mt-4 w-full rounded-2xl px-4 py-4 font-black active:scale-[0.98] ${
+            canAfford
+              ? "bg-cyan-400 text-zinc-950"
+              : "bg-zinc-800 text-zinc-500"
+          }`}
+        >
+          {canAfford ? `Buy for ${listing.price} credits` : "Not enough credits"}
         </button>
       </section>
     </div>
@@ -86,6 +118,7 @@ export function MarketScreen() {
   const [infoListingId, setInfoListingId] = useState<string | null>(null);
   const gameState = useGameStore((store) => store.gameState);
   const setActiveMarketTrader = useGameStore((store) => store.setActiveMarketTrader);
+  const buyMarketListing = useGameStore((store) => store.buyMarketListing);
   const traders = MarketEngine.getTraders();
   const activeTrader = MarketEngine.getActiveTrader(gameState);
   const listings = MarketEngine.getHydratedListingsForTrader(gameState, activeTrader.id);
@@ -178,11 +211,18 @@ export function MarketScreen() {
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
         <p className="text-sm text-zinc-400">
-          Tap a market item to open info. Items do not stack; multiple copies must be separate grid listings.
+          Buy an item to remove that listing from the trader and add it as a separate non-stacked item.
         </p>
       </div>
 
-      {infoListing && <MarketItemInfoSheet listing={infoListing} onClose={() => setInfoListingId(null)} />}
+      {infoListing && (
+        <MarketItemInfoSheet
+          listing={infoListing}
+          credits={gameState.player.credits}
+          onBuy={buyMarketListing}
+          onClose={() => setInfoListingId(null)}
+        />
+      )}
     </div>
   );
 }
