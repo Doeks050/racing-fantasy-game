@@ -1,4 +1,7 @@
-import { drivers } from "@/data";
+"use client";
+
+import { InventoryEngine } from "@/engine";
+import { useGameStore } from "@/store/useGameStore";
 import type { Driver } from "@/types";
 
 type DriverPickerScreenProps = {
@@ -11,6 +14,9 @@ function label(value: string) {
 }
 
 export function DriverPickerScreen({ onBack, onSelectDriver }: DriverPickerScreenProps) {
+  const gameState = useGameStore((store) => store.gameState);
+  const ownedDrivers = InventoryEngine.getOwnedDrivers(gameState);
+
   return (
     <div className="flex flex-col gap-4">
       <button onClick={onBack} className="w-fit text-sm font-bold text-cyan-300">
@@ -22,7 +28,7 @@ export function DriverPickerScreen({ onBack, onSelectDriver }: DriverPickerScree
         <h2 className="mt-1 text-2xl font-black">Select Driver</h2>
       </div>
 
-      {drivers.map((driver) => (
+      {ownedDrivers.map((driver) => (
         <button
           key={driver.id}
           onClick={() => onSelectDriver(driver)}
@@ -46,6 +52,12 @@ export function DriverPickerScreen({ onBack, onSelectDriver }: DriverPickerScree
           </div>
         </button>
       ))}
+
+      {ownedDrivers.length === 0 && (
+        <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+          <p className="text-sm text-zinc-400">No owned drivers found.</p>
+        </div>
+      )}
     </div>
   );
 }
