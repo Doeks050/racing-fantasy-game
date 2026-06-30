@@ -43,6 +43,8 @@ export function migrateGameState(savedState: GameState): GameState {
     race: {
       ...defaultState.race,
       ...savedState.race,
+      currentCircuitId: defaultState.race.currentCircuitId,
+      currentWeekendId: defaultState.race.currentWeekendId,
       activeLoadout: {
         ...defaultState.race.activeLoadout,
         ...savedState.race?.activeLoadout,
