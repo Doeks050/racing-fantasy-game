@@ -76,7 +76,7 @@ export function createInitialGameState(): GameState {
         { slotId: "slot_floor_01", entityId: "common_floor_01", quantity: 1, gridPosition: { column: 3, row: 3 } },
         { slotId: "slot_brakes_01", entityId: "common_brakes_01", quantity: 1, gridPosition: { column: 5, row: 2 } },
       ],
-      ownedDriverIds: ["driver_milo_vance", "driver_kira_vale", "driver_enzo_rix"],
+      ownedDriverIds: ["driver_milo_vance", "driver_kira_vale"],
       ownedStaffIds: [
         "team_pit_crew_common_01",
         "team_strategist_common_01",
