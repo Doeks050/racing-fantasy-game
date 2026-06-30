@@ -137,7 +137,10 @@ export function RacingFantasyApp() {
         <section className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3">
           {screen === "home" && (
             <div className="grid gap-3 pb-3">
-              <section className="relative min-h-[238px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 shadow-2xl shadow-black">
+              <section
+                className="relative min-h-[238px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 bg-cover bg-center shadow-2xl shadow-black"
+                style={{ backgroundImage: `url(${circuit.heroImage})` }}
+              >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_54%_28%,rgba(239,68,68,0.22),transparent_34%),linear-gradient(180deg,rgba(13,15,18,0.35),#050607_90%)]" />
                 <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_50%,transparent_100%)] opacity-50" />
                 <div className="absolute bottom-9 left-6 h-14 w-56 skew-x-[-18deg] rounded-md border border-red-500/30 bg-black/70 shadow-[0_0_45px_rgba(239,68,68,0.24)]" />
@@ -156,7 +159,7 @@ export function RacingFantasyApp() {
                     {circuit.name.replace(" GP", "")}
                   </h2>
                   <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
-                    {weekendInfo.countryLabel} {weekendInfo.countryFlag}
+                    {circuit.country} {circuit.countryFlag}
                   </p>
                   <button onClick={() => setScreen("raceWeekend")} className="mt-3 rounded-md border border-red-500/50 bg-red-950/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-red-300 active:scale-95">
                     {weekendInfo.weekLabel}
@@ -169,7 +172,7 @@ export function RacingFantasyApp() {
                 <MiniStat label="Track" value={`${circuitMeta.trackTempC}°C`} accent />
                 <MiniStat label="Length" value={`${circuitMeta.lengthKm}km`} />
                 <MiniStat label="Turns" value={`${circuitMeta.turns}`} />
-                <MiniStat label="Laps" value={`${circuitMeta.laps}`} />
+                <MiniStat label="Laps" value={`${circuit.laps}`} />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
