@@ -9,7 +9,7 @@ export const RaceEngine = {
 
   calculateCurrentRaceResult(state: GameState) {
     return calculateRaceResult({
-      loadout: state.race.activeLoadout,
+      loadout: state.race.submittedLoadout ?? state.race.activeLoadout,
       circuit: this.getCurrentCircuit(state),
       drivers,
       parts: carParts,
