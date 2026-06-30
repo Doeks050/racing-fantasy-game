@@ -169,6 +169,31 @@ export const LoadoutEngine = {
     });
   },
 
+  unequipCarPart(
+    state: GameState,
+    params: { carId: CarId; slotType: CarPartType },
+  ): GameState {
+    const { [params.slotType]: removedSlotId, ...remainingParts } = state.race.activeLoadout[params.carId].parts;
+
+    if (!removedSlotId) {
+      return state;
+    }
+
+    return touch({
+      ...state,
+      race: {
+        ...state.race,
+        activeLoadout: {
+          ...state.race.activeLoadout,
+          [params.carId]: {
+            ...state.race.activeLoadout[params.carId],
+            parts: remainingParts,
+          },
+        },
+      },
+    });
+  },
+
   equipTeamMember(
     state: GameState,
     params: { slotType: TeamSlotType; memberId: string },
