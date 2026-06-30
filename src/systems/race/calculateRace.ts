@@ -9,6 +9,7 @@ import type {
   TeamMember,
   TeamStats,
 } from "@/types";
+import type { GameInventorySlot } from "@/engine";
 
 const emptyCarStats: CarStats = {
   topSpeed: 0,
@@ -52,9 +53,31 @@ function addTeamStats(base: TeamStats, add: Partial<TeamStats>) {
   };
 }
 
-function getCarStats(carLoadout: CarLoadout, parts: CarPart[]) {
-  return Object.values(carLoadout.parts).reduce<CarStats>((stats, partId) => {
-    const part = parts.find((candidate) => candidate.id === partId);
+function resolveCarPart(
+  loadoutValue: string | undefined,
+  parts: CarPart[],
+  inventorySlots: GameInventorySlot[],
+) {
+  if (!loadoutValue) {
+    return undefined;
+  }
+
+  const inventorySlot = inventorySlots.find((slot) => slot.slotId === loadoutValue);
+
+  if (inventorySlot) {
+    return parts.find((candidate) => candidate.id === inventorySlot.entityId);
+  }
+
+  return parts.find((candidate) => candidate.id === loadoutValue);
+}
+
+function getCarStats(
+  carLoadout: CarLoadout,
+  parts: CarPart[],
+  inventorySlots: GameInventorySlot[],
+) {
+  return Object.values(carLoadout.parts).reduce<CarStats>((stats, loadoutValue) => {
+    const part = resolveCarPart(loadoutValue, parts, inventorySlots);
 
     if (!part) {
       return stats;
@@ -98,6 +121,7 @@ function calculateCarRaceScore(
   circuit: Circuit,
   drivers: Driver[],
   parts: CarPart[],
+  inventorySlots: GameInventorySlot[],
   teamStats: TeamStats,
 ) {
   const driver = drivers.find((candidate) => candidate.id === carLoadout.driverId);
@@ -111,7 +135,7 @@ function calculateCarRaceScore(
     };
   }
 
-  const carStats = getCarStats(carLoadout, parts);
+  const carStats = getCarStats(carLoadout, parts, inventorySlots);
 
   const sectorScores = circuit.sectors.map((sector) =>
     scoreWeightedStats(sector, carStats, driver, teamStats),
@@ -155,14 +179,17 @@ export function calculateRaceResult(params: {
   drivers: Driver[];
   parts: CarPart[];
   teamMembers: TeamMember[];
+  inventorySlots?: GameInventorySlot[];
 }) {
   const teamStats = getTeamStats(params.loadout.team, params.teamMembers);
+  const inventorySlots = params.inventorySlots ?? [];
 
   const car1 = calculateCarRaceScore(
     params.loadout.car1,
     params.circuit,
     params.drivers,
     params.parts,
+    inventorySlots,
     teamStats,
   );
 
@@ -171,6 +198,7 @@ export function calculateRaceResult(params: {
     params.circuit,
     params.drivers,
     params.parts,
+    inventorySlots,
     teamStats,
   );
 
