@@ -93,6 +93,30 @@ export type Circuit = {
   wetChance: number;
 };
 
+export type MarketListingKind = "car_part";
+
+export type MarketTrader = {
+  id: string;
+  name: string;
+  description: string;
+  categoryLabel: string;
+  partTypes: CarPartType[];
+};
+
+export type MarketListing = {
+  id: string;
+  traderId: string;
+  kind: MarketListingKind;
+  itemId: string;
+  price: number;
+  stock: number;
+  gridPosition: {
+    column: number;
+    row: number;
+  };
+  isRotated?: boolean;
+};
+
 export type CarLoadout = {
   driverId?: string;
   parts: Partial<Record<CarPartType, string>>;
