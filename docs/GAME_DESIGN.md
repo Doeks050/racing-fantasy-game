@@ -44,6 +44,19 @@ Each car has 8 fixed part slots:
 - Floor
 - Brakes
 
+## Brand Model Rule
+Every part brand starts with a base model for each supported part type.
+
+Base models within the same part type should be roughly comparable in total power. The difference between brands is their stat focus, not that one brand is automatically a higher tier.
+
+Example for brake kits:
+- Carbex Base Brake Kit: reliability focus
+- Bremswork Base Brake Kit: stability focus
+- Vescari Base Brake Kit: tyre-management focus
+- RPS Base Brake Kit: raw braking focus with more stress
+
+This same rule should be used later for engines, gearboxes, suspension, aero parts, floors and wings.
+
 ## Brake Kit Brands
 Current brake-kit brands:
 - Carbex
@@ -79,6 +92,13 @@ Items do not stack.
 If the market or garage contains multiple copies of the same item, each copy must be represented as a separate grid item with its own slot/listing position.
 
 Do not show `x2`, `x3`, stock badges, or stacked quantities on item cards.
+
+## App Shell / Mobile Scroll Rule
+The app shell is fixed to the viewport.
+
+Header and bottom navigation must not overlay the content. Only the center content area may scroll vertically.
+
+Avoid fixed bottom nav overlays that require extra bottom padding. Content should never slide underneath the header or bottom navigation.
 
 ## Market
 Market also uses a 6-column grid system instead of a flat shop list.
