@@ -27,6 +27,72 @@ export type HomeSponsorPreviewItem = {
   rewardLabel: string;
 };
 
+export type HomeWeekendInfo = {
+  weekendId: string;
+  weekLabel: string;
+  countryLabel: string;
+  countryFlag: string;
+  raceStartsInLabel: string;
+};
+
+export type HomeCircuitMeta = {
+  circuitId: string;
+  lengthKm: string;
+  turns: number;
+  laps: number;
+  trackTempC: number;
+};
+
+const fallbackWeekendInfo: HomeWeekendInfo = {
+  weekendId: "fallback",
+  weekLabel: "Week 08 / 24",
+  countryLabel: "United Kingdom",
+  countryFlag: "🇬🇧",
+  raceStartsInLabel: "02d 14h 37m",
+};
+
+const fallbackCircuitMeta: HomeCircuitMeta = {
+  circuitId: "fallback",
+  lengthKm: "5.301",
+  turns: 18,
+  laps: 52,
+  trackTempC: 23,
+};
+
+export const homeWeekendInfoById: Record<string, HomeWeekendInfo> = {
+  weekend_neon_harbor_01: {
+    weekendId: "weekend_neon_harbor_01",
+    weekLabel: "Week 08 / 24",
+    countryLabel: "United Kingdom",
+    countryFlag: "🇬🇧",
+    raceStartsInLabel: "02d 14h 37m",
+  },
+};
+
+export const homeCircuitMetaById: Record<string, HomeCircuitMeta> = {
+  circuit_neon_harbor: {
+    circuitId: "circuit_neon_harbor",
+    lengthKm: "5.301",
+    turns: 18,
+    laps: 52,
+    trackTempC: 23,
+  },
+  circuit_apex_desert: {
+    circuitId: "circuit_apex_desert",
+    lengthKm: "6.210",
+    turns: 14,
+    laps: 47,
+    trackTempC: 38,
+  },
+  circuit_monsoon_peak: {
+    circuitId: "circuit_monsoon_peak",
+    lengthKm: "4.860",
+    turns: 21,
+    laps: 58,
+    trackTempC: 18,
+  },
+};
+
 export const homeSchedule: HomeScheduleItem[] = [
   { id: "practice_1", name: "Practice 1", day: "Fri", time: "09:00", status: "completed" },
   { id: "practice_2", name: "Practice 2", day: "Fri", time: "14:00", status: "open" },
@@ -58,6 +124,14 @@ export const homeSponsorPreview: HomeSponsorPreviewItem[] = [
     rewardLabel: "2,500 credits",
   },
 ];
+
+export function getHomeWeekendInfo(weekendId: string): HomeWeekendInfo {
+  return homeWeekendInfoById[weekendId] ?? fallbackWeekendInfo;
+}
+
+export function getHomeCircuitMeta(circuitId: string): HomeCircuitMeta {
+  return homeCircuitMetaById[circuitId] ?? fallbackCircuitMeta;
+}
 
 export function getHomeDeadlines(params: {
   loadoutDeadlineLabel: string;
