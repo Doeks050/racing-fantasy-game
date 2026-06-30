@@ -8,8 +8,13 @@ Standalone fantasy racing game, built as a separate Next.js repository, but desi
 - Race Loadout
 - Garage Stash
 - Market
-- Reward Draft
 - Standings
+- Race Weekend
+- Circuits
+- Team HQ
+- Upgrades
+- Sponsors
+- Race Results
 
 ## Race Loadout
 The loadout screen has 3 tabs:
@@ -45,3 +50,34 @@ Each car has 8 fixed part slots:
 - Race Engineer
 - Data Analyst
 - Mechanic Chief
+
+## Garage Stash
+Garage Stash uses a 6-column inventory grid inspired by the extraction-game stash.
+
+Items have:
+- grid size
+- position
+- rotation
+- quantity
+
+The player should be able to drag items inside the stash grid. Items snap to the grid and cannot overlap.
+
+Tapping an item opens an item info screen.
+
+## Market
+Market also uses a 6-column grid system instead of a flat shop list.
+
+Market is organized by specialist traders.
+
+Current trader categories:
+- Aero Lab: Front Wing, Rear Wing, Floor
+- Powertrain Bay: Engine, Gearbox
+- Mechanical Shop: Chassis, Suspension, Brakes
+
+Each trader shows listings inside a grid layout. This keeps Garage and Market visually and mechanically consistent.
+
+Future trader categories can include:
+- Driver Agency
+- Team Staff Office
+- Sponsor Broker
+- Prototype Parts Dealer
