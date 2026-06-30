@@ -6,9 +6,9 @@ import { getCarLoadoutStats, getOverallScore, getTeamLoadoutStats, meterValue } 
 import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
 import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
 import { useGameStore } from "@/store/useGameStore";
-import type { CarPart, Driver, GaragePickerMode, TeamMember } from "@/types";
+import type { Driver, GaragePickerMode, TeamMember } from "@/types";
 
-type Tab = "car1" | "car2" | "team";
+ type Tab = "car1" | "car2" | "team";
 
 type CarTab = "car1" | "car2";
 
@@ -44,10 +44,23 @@ export function RaceLoadoutScreen() {
   const [pickerMode, setPickerMode] = useState<GaragePickerMode | null>(null);
   const [isDriverPickerOpen, setIsDriverPickerOpen] = useState(false);
 
-  const loadout = useGameStore((store) => store.gameState.race.activeLoadout);
+  const gameState = useGameStore((store) => store.gameState);
+  const loadout = gameState.race.activeLoadout;
+  const inventorySlots = gameState.garage.inventorySlots;
   const selectDriver = useGameStore((store) => store.selectDriver);
   const equipCarPart = useGameStore((store) => store.equipCarPart);
   const equipTeamMember = useGameStore((store) => store.equipTeamMember);
+
+  function resolvePartName(loadoutValue: string | undefined) {
+    if (!loadoutValue) {
+      return "Empty";
+    }
+
+    const inventorySlot = inventorySlots.find((slot) => slot.slotId === loadoutValue);
+    const part = carParts.find((item) => item.id === (inventorySlot?.entityId ?? loadoutValue));
+
+    return part?.name ?? "Missing Item";
+  }
 
   if (isDriverPickerOpen && tab !== "team") {
     const carId = getCarTab(tab);
@@ -68,13 +81,13 @@ export function RaceLoadoutScreen() {
       <GaragePickerScreen
         mode={pickerMode}
         onBack={() => setPickerMode(null)}
-        onSelectCarPart={(part: CarPart) => {
+        onSelectCarPartSlot={(slot) => {
           if (pickerMode.type !== "car_part") return;
 
           equipCarPart({
             carId: pickerMode.carId,
             slotType: pickerMode.slotType,
-            partId: part.id,
+            inventorySlotId: slot.slotId,
           });
 
           setPickerMode(null);
@@ -96,7 +109,7 @@ export function RaceLoadoutScreen() {
   const activeCarId = getCarTab(tab);
   const car = activeCarId === "car1" ? loadout.car1 : loadout.car2;
   const driver = drivers.find((item) => item.id === car.driverId);
-  const carStats = tab !== "team" ? getCarLoadoutStats(car) : null;
+  const carStats = tab !== "team" ? getCarLoadoutStats(car, inventorySlots) : null;
   const teamStats = getTeamLoadoutStats(loadout.team);
 
   return (
@@ -142,8 +155,7 @@ export function RaceLoadoutScreen() {
 
             <div className="relative mt-6 grid grid-cols-3 gap-3">
               {carSlots.map((slot) => {
-                const partId = car.parts[slot];
-                const part = carParts.find((item) => item.id === partId);
+                const inventorySlotId = car.parts[slot];
 
                 return (
                   <button
@@ -158,7 +170,10 @@ export function RaceLoadoutScreen() {
                     className="min-h-20 rounded-2xl border border-zinc-700 bg-zinc-950/80 p-2 text-left active:scale-95"
                   >
                     <p className="text-[10px] uppercase text-zinc-500">{label(slot)}</p>
-                    <p className="mt-1 text-xs font-bold text-zinc-100">{part?.name ?? "Empty"}</p>
+                    <p className="mt-1 text-xs font-bold text-zinc-100">{resolvePartName(inventorySlotId)}</p>
+                    {inventorySlotId && (
+                      <p className="mt-1 text-[10px] text-zinc-600">{inventorySlotId}</p>
+                    )}
                   </button>
                 );
               })}
