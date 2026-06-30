@@ -6,6 +6,7 @@ export const drivers: Driver[] = [
     name: "Milo Vance",
     rarity: "common",
     value: 1200,
+    gridSize: { width: 2, height: 2 },
     stats: {
       pace: 58,
       consistency: 66,
@@ -22,6 +23,7 @@ export const drivers: Driver[] = [
     name: "Kira Vale",
     rarity: "uncommon",
     value: 2200,
+    gridSize: { width: 2, height: 2 },
     stats: {
       pace: 68,
       consistency: 61,
@@ -38,6 +40,7 @@ export const drivers: Driver[] = [
     name: "Enzo Rix",
     rarity: "rare",
     value: 4200,
+    gridSize: { width: 2, height: 2 },
     stats: {
       pace: 77,
       consistency: 73,
