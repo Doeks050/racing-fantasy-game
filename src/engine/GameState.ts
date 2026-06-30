@@ -34,7 +34,9 @@ export type RaceWeekendState = {
   currentWeekendId: string;
   deadlineLabel: string;
   isSubmitted: boolean;
+  isCompleted: boolean;
   submittedAt?: string;
+  completedAt?: string;
 };
 
 export type EconomyState = {
@@ -105,6 +107,7 @@ export function createInitialGameState(): GameState {
       currentWeekendId: "weekend_neon_harbor_01",
       deadlineLabel: "Friday 20:00",
       isSubmitted: false,
+      isCompleted: false,
     },
     economy: {
       activeMarketTraderId: marketTraders[0]?.id ?? "",
