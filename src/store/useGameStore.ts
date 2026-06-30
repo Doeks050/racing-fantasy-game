@@ -16,6 +16,7 @@ type GameStore = {
   clearSavedGameState: () => void;
   selectDriver: (params: { carId: CarId; driverId: string }) => void;
   equipCarPart: (params: { carId: CarId; slotType: CarPartType; inventorySlotId: string }) => void;
+  unequipCarPart: (params: { carId: CarId; slotType: CarPartType }) => void;
   equipTeamMember: (params: { slotType: TeamSlotType; memberId: string }) => void;
   setActiveMarketTrader: (traderId: string) => void;
   buyMarketListing: (listingId: string) => void;
@@ -68,6 +69,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   equipCarPart: (params) =>
     set((store) => ({
       gameState: withAutosave(LoadoutEngine.equipCarPart(store.gameState, params)),
+    })),
+
+  unequipCarPart: (params) =>
+    set((store) => ({
+      gameState: withAutosave(LoadoutEngine.unequipCarPart(store.gameState, params)),
     })),
 
   equipTeamMember: (params) =>
