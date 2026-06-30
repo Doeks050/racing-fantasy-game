@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { carParts, demoLoadout, drivers, teamMembers } from "@/data";
+import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
+import type { CarPart, GaragePickerMode, RaceLoadout, TeamMember } from "@/types";
 
 type Tab = "car1" | "car2" | "team";
 
@@ -30,7 +32,48 @@ function label(value: string) {
 
 export function RaceLoadoutScreen() {
   const [tab, setTab] = useState<Tab>("car1");
-  const car = tab === "car1" ? demoLoadout.car1 : demoLoadout.car2;
+  const [loadout, setLoadout] = useState<RaceLoadout>(demoLoadout);
+  const [pickerMode, setPickerMode] = useState<GaragePickerMode | null>(null);
+
+  if (pickerMode) {
+    return (
+      <GaragePickerScreen
+        mode={pickerMode}
+        onBack={() => setPickerMode(null)}
+        onSelectCarPart={(part: CarPart) => {
+          if (pickerMode.type !== "car_part") return;
+
+          setLoadout((current) => ({
+            ...current,
+            [pickerMode.carId]: {
+              ...current[pickerMode.carId],
+              parts: {
+                ...current[pickerMode.carId].parts,
+                [pickerMode.slotType]: part.id,
+              },
+            },
+          }));
+
+          setPickerMode(null);
+        }}
+        onSelectTeamMember={(member: TeamMember) => {
+          if (pickerMode.type !== "team_member") return;
+
+          setLoadout((current) => ({
+            ...current,
+            team: {
+              ...current.team,
+              [pickerMode.slotType]: member.id,
+            },
+          }));
+
+          setPickerMode(null);
+        }}
+      />
+    );
+  }
+
+  const car = tab === "car1" ? loadout.car1 : loadout.car2;
   const driver = drivers.find((item) => item.id === car?.driverId);
 
   return (
@@ -56,7 +99,7 @@ export function RaceLoadoutScreen() {
             <div className="mt-3 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold">{driver?.name}</h2>
-                <p className="text-sm text-zinc-400">Tap to change driver later</p>
+                <p className="text-sm text-zinc-400">Driver picker komt hierna</p>
               </div>
               <div className="rounded-2xl border border-cyan-400/40 px-3 py-2 text-cyan-300">
                 {driver?.rarity}
@@ -77,6 +120,13 @@ export function RaceLoadoutScreen() {
                 return (
                   <button
                     key={slot}
+                    onClick={() =>
+                      setPickerMode({
+                        type: "car_part",
+                        carId: tab,
+                        slotType: slot,
+                      })
+                    }
                     className="min-h-20 rounded-2xl border border-zinc-700 bg-zinc-950/80 p-2 text-left active:scale-95"
                   >
                     <p className="text-[10px] uppercase text-zinc-500">{label(slot)}</p>
@@ -123,11 +173,20 @@ export function RaceLoadoutScreen() {
             <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">Pitwall Setup</p>
             <div className="mt-6 grid gap-3">
               {teamSlots.map((slot) => {
-                const memberId = demoLoadout.team[slot];
+                const memberId = loadout.team[slot];
                 const member = teamMembers.find((item) => item.id === memberId);
 
                 return (
-                  <button key={slot} className="rounded-2xl border border-zinc-700 bg-zinc-950/80 p-3 text-left">
+                  <button
+                    key={slot}
+                    onClick={() =>
+                      setPickerMode({
+                        type: "team_member",
+                        slotType: slot,
+                      })
+                    }
+                    className="rounded-2xl border border-zinc-700 bg-zinc-950/80 p-3 text-left active:scale-95"
+                  >
                     <p className="text-[10px] uppercase text-zinc-500">{label(slot)}</p>
                     <p className="mt-1 text-sm font-bold">{member?.name ?? "Empty"}</p>
                   </button>
