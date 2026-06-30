@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RaceLoadoutScreen } from "@/screens/loadout/RaceLoadoutScreen";
 import { GarageStashScreen } from "@/screens/garage/GarageStashScreen";
 import { MarketScreen } from "@/screens/market/MarketScreen";
@@ -11,6 +11,7 @@ import { TeamHqScreen } from "@/screens/team-hq/TeamHqScreen";
 import { UpgradesScreen } from "@/screens/upgrades/UpgradesScreen";
 import { SponsorsScreen } from "@/screens/sponsors/SponsorsScreen";
 import { RaceResultsScreen } from "@/screens/results/RaceResultsScreen";
+import { useGameStore } from "@/store/useGameStore";
 
 type Screen =
   | "home"
@@ -38,6 +39,12 @@ const moreItems: { id: Screen; label: string; description: string }[] = [
 
 export function RacingFantasyApp() {
   const [screen, setScreen] = useState<Screen>("home");
+  const hydrateFromSave = useGameStore((store) => store.hydrateFromSave);
+  const player = useGameStore((store) => store.gameState.player);
+
+  useEffect(() => {
+    hydrateFromSave();
+  }, [hydrateFromSave]);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -45,6 +52,7 @@ export function RacingFantasyApp() {
         <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 px-4 py-4 backdrop-blur">
           <p className="text-xs uppercase tracking-[0.3em] text-cyan-400">Racing Fantasy</p>
           <h1 className="mt-1 text-2xl font-black">Neon Harbor GP</h1>
+          <p className="mt-1 text-xs text-zinc-500">{player.teamName} · {player.credits} credits</p>
         </header>
 
         <section className="flex-1 px-4 py-4 pb-24">
