@@ -88,6 +88,13 @@ export type Circuit = {
   id: string;
   name: string;
   location: string;
+  country: string;
+  countryFlag: string;
+  heroImage: string;
+  laps: number;
+  referenceLapTimeMs: number;
+  referenceSectorTimesMs: [number, number, number];
+  benchmarkRating: number;
   sectors: [SectorWeights, SectorWeights, SectorWeights];
   tyreWear: number;
   reliabilityStress: number;
