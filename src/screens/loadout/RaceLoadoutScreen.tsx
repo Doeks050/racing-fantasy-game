@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { carParts, demoLoadout, drivers, teamMembers } from "@/data";
+import { carParts, drivers, teamMembers } from "@/data";
+import { getCarLoadoutStats, getOverallScore, getTeamLoadoutStats, meterValue } from "@/lib/stats/loadoutStats";
 import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
 import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
-import type { CarPart, Driver, GaragePickerMode, RaceLoadout, TeamMember } from "@/types";
-import { getCarLoadoutStats, getOverallScore, getTeamLoadoutStats, meterValue } from "@/lib/stats/loadoutStats";
+import { useGameStore } from "@/store/useGameStore";
+import type { CarPart, Driver, GaragePickerMode, TeamMember } from "@/types";
 
 type Tab = "car1" | "car2" | "team";
+
+type CarTab = "car1" | "car2";
 
 const carSlots = [
   "front_wing",
@@ -32,25 +35,28 @@ function label(value: string) {
   return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function getCarTab(tab: Tab): CarTab {
+  return tab === "car2" ? "car2" : "car1";
+}
+
 export function RaceLoadoutScreen() {
   const [tab, setTab] = useState<Tab>("car1");
-  const [loadout, setLoadout] = useState<RaceLoadout>(demoLoadout);
   const [pickerMode, setPickerMode] = useState<GaragePickerMode | null>(null);
   const [isDriverPickerOpen, setIsDriverPickerOpen] = useState(false);
 
+  const loadout = useGameStore((store) => store.gameState.race.activeLoadout);
+  const selectDriver = useGameStore((store) => store.selectDriver);
+  const equipCarPart = useGameStore((store) => store.equipCarPart);
+  const equipTeamMember = useGameStore((store) => store.equipTeamMember);
+
   if (isDriverPickerOpen && tab !== "team") {
+    const carId = getCarTab(tab);
+
     return (
       <DriverPickerScreen
         onBack={() => setIsDriverPickerOpen(false)}
         onSelectDriver={(driver: Driver) => {
-          setLoadout((current) => ({
-            ...current,
-            [tab]: {
-              ...current[tab],
-              driverId: driver.id,
-            },
-          }));
-
+          selectDriver({ carId, driverId: driver.id });
           setIsDriverPickerOpen(false);
         }}
       />
@@ -65,29 +71,21 @@ export function RaceLoadoutScreen() {
         onSelectCarPart={(part: CarPart) => {
           if (pickerMode.type !== "car_part") return;
 
-          setLoadout((current) => ({
-            ...current,
-            [pickerMode.carId]: {
-              ...current[pickerMode.carId],
-              parts: {
-                ...current[pickerMode.carId].parts,
-                [pickerMode.slotType]: part.id,
-              },
-            },
-          }));
+          equipCarPart({
+            carId: pickerMode.carId,
+            slotType: pickerMode.slotType,
+            partId: part.id,
+          });
 
           setPickerMode(null);
         }}
         onSelectTeamMember={(member: TeamMember) => {
           if (pickerMode.type !== "team_member") return;
 
-          setLoadout((current) => ({
-            ...current,
-            team: {
-              ...current.team,
-              [pickerMode.slotType]: member.id,
-            },
-          }));
+          equipTeamMember({
+            slotType: pickerMode.slotType,
+            memberId: member.id,
+          });
 
           setPickerMode(null);
         }}
@@ -95,8 +93,9 @@ export function RaceLoadoutScreen() {
     );
   }
 
-  const car = tab === "car1" ? loadout.car1 : loadout.car2;
-  const driver = drivers.find((item) => item.id === car?.driverId);
+  const activeCarId = getCarTab(tab);
+  const car = activeCarId === "car1" ? loadout.car1 : loadout.car2;
+  const driver = drivers.find((item) => item.id === car.driverId);
   const carStats = tab !== "team" ? getCarLoadoutStats(car) : null;
   const teamStats = getTeamLoadoutStats(loadout.team);
 
@@ -118,18 +117,23 @@ export function RaceLoadoutScreen() {
 
       {tab !== "team" ? (
         <>
-          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
+          <button
+            onClick={() => setIsDriverPickerOpen(true)}
+            className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 text-left active:scale-[0.98]"
+          >
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Driver</p>
             <div className="mt-3 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold">{driver?.name}</h2>
+                <h2 className="text-xl font-bold">{driver?.name ?? "Empty Driver Slot"}</h2>
                 <p className="text-sm text-zinc-400">Tap to change driver</p>
               </div>
-              <div className="rounded-2xl border border-cyan-400/40 px-3 py-2 text-cyan-300">
-                {driver?.rarity}
-              </div>
+              {driver && (
+                <div className="rounded-2xl border border-cyan-400/40 px-3 py-2 text-cyan-300">
+                  {driver.rarity}
+                </div>
+              )}
             </div>
-          </section>
+          </button>
 
           <section className="relative min-h-[300px] overflow-hidden rounded-3xl border border-cyan-500/20 bg-gradient-to-b from-zinc-900 to-zinc-950 p-4">
             <div className="absolute left-1/2 top-24 h-24 w-72 -translate-x-1/2 rounded-full border border-zinc-700 bg-zinc-800/70" />
@@ -147,7 +151,7 @@ export function RaceLoadoutScreen() {
                     onClick={() =>
                       setPickerMode({
                         type: "car_part",
-                        carId: tab,
+                        carId: activeCarId,
                         slotType: slot,
                       })
                     }
@@ -161,7 +165,7 @@ export function RaceLoadoutScreen() {
             </div>
           </section>
 
-          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
             <h3 className="font-bold">Car Performance</h3>
             <div className="mt-3 grid gap-2">
               {carStats &&
@@ -186,7 +190,7 @@ export function RaceLoadoutScreen() {
             </div>
           </section>
 
-          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
             <h3 className="font-bold">Driver Stats</h3>
             <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
               {driver &&
@@ -227,7 +231,7 @@ export function RaceLoadoutScreen() {
             </div>
           </section>
 
-          <section onClick={() => setIsDriverPickerOpen(true)} className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4 active:scale-[0.98]">
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
             <h3 className="font-bold">Team Performance</h3>
             <div className="mt-3 grid gap-2">
               {Object.entries(teamStats).map(([stat, value]) => (
