@@ -4,7 +4,7 @@ import { useRef, useState, type PointerEvent } from "react";
 import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 
-const CELL_HEIGHT_PX = 58;
+const CELL_HEIGHT_PX = 36;
 const GRID_GAP_PX = 4;
 const TAP_MOVE_THRESHOLD_PX = 8;
 
@@ -12,8 +12,6 @@ type DragState = {
   slotId: string;
   startX: number;
   startY: number;
-  currentX: number;
-  currentY: number;
   targetColumn: number;
   targetRow: number;
   isRotated: boolean;
@@ -41,8 +39,16 @@ function ItemImage({ imagePath, alt, large = false }: { imagePath?: string; alt:
   }
 
   return (
-    <div className={`${large ? "h-36" : "absolute inset-0"} flex items-center justify-center overflow-hidden rounded-2xl bg-black/25 p-2`}>
+    <div className={`${large ? "h-36" : "absolute inset-0"} flex items-center justify-center overflow-hidden rounded-md bg-black/25 p-1`}>
       <img src={imagePath} alt={alt} className="max-h-full max-w-full object-contain" draggable={false} />
+    </div>
+  );
+}
+
+function ItemFallback({ value }: { value: string }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-1">
+      <span className="truncate text-[9px] font-black uppercase text-zinc-500">{value}</span>
     </div>
   );
 }
@@ -82,7 +88,11 @@ function ItemInfoSheet({ slot, onClose }: { slot: HydratedGarageSlot; onClose: (
           </button>
         </div>
 
-        {slot.item.imagePath && <div className="mt-4"><ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} large /></div>}
+        {slot.item.imagePath && (
+          <div className="mt-4">
+            <ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} large />
+          </div>
+        )}
 
         <p className="mt-4 text-sm leading-6 text-zinc-300">{slot.item.description}</p>
 
@@ -134,7 +144,6 @@ export function GarageStashScreen() {
 
     return {
       rect,
-      cellWidth,
       columnPitch: cellWidth + GRID_GAP_PX,
       rowPitch: CELL_HEIGHT_PX + GRID_GAP_PX,
     };
@@ -187,8 +196,6 @@ export function GarageStashScreen() {
         slotId,
         startX,
         startY,
-        currentX: clientX,
-        currentY: clientY,
         targetColumn: currentColumn,
         targetRow: currentRow,
         isRotated: currentRotation,
@@ -213,8 +220,6 @@ export function GarageStashScreen() {
       slotId,
       startX,
       startY,
-      currentX: clientX,
-      currentY: clientY,
       targetColumn: rotatedFits ? rotatedColumn : currentColumn,
       targetRow: rotatedFits ? rotatedRow : currentRow,
       isRotated: rotatedFits ? !currentRotation : currentRotation,
@@ -247,8 +252,6 @@ export function GarageStashScreen() {
       slotId,
       startX: event.clientX,
       startY: event.clientY,
-      currentX: event.clientX,
-      currentY: event.clientY,
       targetColumn: slot.gridPosition.column,
       targetRow: slot.gridPosition.row,
       isRotated: Boolean(slot.isRotated),
@@ -324,7 +327,7 @@ export function GarageStashScreen() {
           {Array.from({ length: GARAGE_GRID_COLUMNS * rowCount }).map((_, index) => (
             <div
               key={`cell-${index}`}
-              className="rounded-lg border border-zinc-800/80 bg-zinc-950/50"
+              className="rounded-md border border-zinc-800/80 bg-zinc-950/50"
               style={{
                 gridColumn: (index % GARAGE_GRID_COLUMNS) + 1,
                 gridRow: Math.floor(index / GARAGE_GRID_COLUMNS) + 1,
@@ -333,7 +336,7 @@ export function GarageStashScreen() {
           ))}
 
           {slots.length === 0 && (
-            <div className="pointer-events-none z-10 col-span-6 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
+            <div className="pointer-events-none z-10 col-span-10 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
               <div>
                 <p className="text-sm font-black text-zinc-300">Stash is empty</p>
                 <p className="mt-1 text-xs text-zinc-500">All starter parts are currently mounted on your cars.</p>
@@ -343,7 +346,7 @@ export function GarageStashScreen() {
 
           {dragState?.didMove && (
             <div
-              className={`pointer-events-none z-10 rounded-xl border-2 border-dashed ${
+              className={`pointer-events-none z-10 rounded-md border-2 border-dashed ${
                 dragState.isValid ? "border-cyan-300 bg-cyan-400/10" : "border-red-400 bg-red-500/10"
               }`}
               style={{
@@ -361,15 +364,17 @@ export function GarageStashScreen() {
             const column = isBeingDragged ? dragState.targetColumn : slot.gridPosition?.column ?? 0;
             const row = isBeingDragged ? dragState.targetRow : slot.gridPosition?.row ?? 0;
             const isSelected = slot.slotId === selectedSlotId;
+            const showName = width > 1 || height > 1;
 
             return (
               <button
                 key={slot.slotId}
+                title={slot.item.name}
                 onPointerDown={(event) => handlePointerDown(event, slot.slotId)}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerCancel={() => setDragState(null)}
-                className={`relative z-20 overflow-hidden rounded-xl border p-2 text-left shadow-lg transition-transform active:scale-[0.98] ${
+                className={`relative z-20 overflow-hidden rounded-md border text-left shadow-lg transition-transform active:scale-[0.98] ${
                   isBeingDragged && dragState?.isValid === false
                     ? "border-red-400 bg-red-950/80"
                     : isSelected
@@ -383,14 +388,13 @@ export function GarageStashScreen() {
                 }}
               >
                 <ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} />
-                <div className="relative z-10 flex items-start justify-between gap-1">
-                  <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
-                  <p className="text-[10px] text-zinc-500">{width}x{height}</p>
-                </div>
-                <div className="relative z-10 mt-5 rounded bg-black/55 p-1">
-                  <p className="text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
-                  <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
-                </div>
+                {!slot.item.imagePath && <ItemFallback value={label(slot.item.type).slice(0, 3)} />}
+                {showName && (
+                  <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/65 px-1 py-0.5">
+                    <p className="truncate text-[9px] font-bold leading-tight text-zinc-100">{slot.item.name}</p>
+                    <p className="truncate text-[8px] text-zinc-500">{itemSubtitle(slot)}</p>
+                  </div>
+                )}
               </button>
             );
           })}
