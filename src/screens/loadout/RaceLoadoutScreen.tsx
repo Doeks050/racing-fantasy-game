@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { carParts, drivers, teamMembers } from "@/data";
-import { LoadoutEngine } from "@/engine";
 import { getCarLoadoutStats, getOverallScore, getTeamLoadoutStats, meterValue } from "@/lib/stats/loadoutStats";
 import { GaragePickerScreen } from "@/screens/garage/GaragePickerScreen";
 import { DriverPickerScreen } from "@/screens/loadout/DriverPickerScreen";
@@ -251,7 +250,6 @@ export function RaceLoadoutScreen() {
   const gameState = useGameStore((store) => store.gameState);
   const loadout = gameState.race.activeLoadout;
   const inventorySlots = gameState.garage.inventorySlots;
-  const validation = LoadoutEngine.validateRaceLoadout(gameState);
   const selectDriver = useGameStore((store) => store.selectDriver);
   const equipCarPart = useGameStore((store) => store.equipCarPart);
   const unequipCarPart = useGameStore((store) => store.unequipCarPart);
@@ -314,32 +312,21 @@ export function RaceLoadoutScreen() {
 
   return (
     <div className="grid gap-2 pb-4">
-      <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-white/10 bg-zinc-950/85 shadow-lg shadow-black/25">
+      <div className="grid grid-cols-3 overflow-hidden rounded-md border border-white/10 bg-black/40 shadow-lg shadow-black/20">
         {(["car1", "car2", "team"] as Tab[]).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
-            className={`border-b-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] active:scale-[0.98] ${
-              tab === item ? "border-red-500 bg-red-950/20 text-zinc-100" : "border-transparent text-zinc-500"
+            className={`h-9 border-b px-2 text-[9px] font-black uppercase tracking-[0.14em] active:scale-[0.98] ${
+              tab === item
+                ? "border-red-500 bg-red-950/15 text-zinc-100"
+                : "border-transparent bg-zinc-950/40 text-zinc-500"
             }`}
           >
             {item === "car1" ? "Driver 1" : item === "car2" ? "Driver 2" : "Team"}
           </button>
         ))}
       </div>
-
-      <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/25">
-        <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-500">Race Loadout</p>
-            <h2 className="mt-0.5 text-lg font-black uppercase text-zinc-50">{validation.isReady ? "Ready" : "Incomplete"}</h2>
-          </div>
-          <div className="rounded-md border border-red-500/30 bg-red-950/20 px-2 py-1.5 text-right">
-            <p className="text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">Slots</p>
-            <p className="text-sm font-black text-red-300">{validation.filledSlots}/{validation.totalSlots}</p>
-          </div>
-        </div>
-      </section>
 
       {tab !== "team" ? (
         <>
