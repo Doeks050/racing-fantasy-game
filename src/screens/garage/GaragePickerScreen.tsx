@@ -4,7 +4,7 @@ import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@
 import { useGameStore } from "@/store/useGameStore";
 import type { GaragePickerMode, TeamMember } from "@/types";
 
-const CELL_HEIGHT_PX = 58;
+const CELL_HEIGHT_PX = 36;
 
 type GaragePickerScreenProps = {
   mode: GaragePickerMode;
@@ -30,6 +30,14 @@ function ItemThumb({ imagePath, alt }: { imagePath?: string; alt: string }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center p-1 opacity-90">
       <img src={imagePath} alt={alt} className="max-h-full max-w-full object-contain" draggable={false} />
+    </div>
+  );
+}
+
+function ItemFallback({ label }: { label: string }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-1">
+      <span className="truncate text-[9px] font-black uppercase text-zinc-500">{label}</span>
     </div>
   );
 }
@@ -105,7 +113,7 @@ export function GaragePickerScreen({
             {Array.from({ length: GARAGE_GRID_COLUMNS * rowCount }).map((_, index) => (
               <div
                 key={`cell-${index}`}
-                className="rounded-lg border border-zinc-800/80 bg-zinc-950/50"
+                className="rounded-md border border-zinc-800/80 bg-zinc-950/50"
                 style={{
                   gridColumn: (index % GARAGE_GRID_COLUMNS) + 1,
                   gridRow: Math.floor(index / GARAGE_GRID_COLUMNS) + 1,
@@ -114,7 +122,7 @@ export function GaragePickerScreen({
             ))}
 
             {carPartSlots.length === 0 && (
-              <div className="pointer-events-none z-10 col-span-6 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
+              <div className="pointer-events-none z-10 col-span-10 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
                 <div>
                   <p className="text-sm font-black text-zinc-300">No compatible stash parts</p>
                   <p className="mt-1 text-xs text-zinc-500">
@@ -130,26 +138,27 @@ export function GaragePickerScreen({
               const height = isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
               const column = slot.gridPosition?.column ?? 0;
               const row = slot.gridPosition?.row ?? 0;
+              const showName = width > 1 || height > 1;
 
               return (
                 <button
                   key={slot.slotId}
                   onClick={() => onSelectCarPartSlot(slot)}
-                  className="relative z-20 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left shadow-lg active:scale-[0.98]"
+                  title={slot.item.name}
+                  className="relative z-20 overflow-hidden rounded-md border border-zinc-700 bg-zinc-950 text-left shadow-lg active:scale-[0.98]"
                   style={{
                     gridColumn: `${column + 1} / span ${width}`,
                     gridRow: `${row + 1} / span ${height}`,
                   }}
                 >
                   <ItemThumb imagePath={slot.item.imagePath} alt={slot.item.name} />
-                  <div className="relative z-10 flex items-start justify-between gap-1">
-                    <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
-                    <p className="text-[10px] text-zinc-500">{width}x{height}</p>
-                  </div>
-                  <div className="relative z-10 mt-5 rounded bg-black/55 p-1">
-                    <p className="text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
-                    <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
-                  </div>
+                  {!slot.item.imagePath && <ItemFallback label={label(slot.item.type).slice(0, 3)} />}
+                  {showName && (
+                    <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/65 px-1 py-0.5">
+                      <p className="truncate text-[9px] font-bold leading-tight text-zinc-100">{slot.item.name}</p>
+                      <p className="truncate text-[8px] text-zinc-500">{itemSubtitle(slot)}</p>
+                    </div>
+                  )}
                 </button>
               );
             })}
