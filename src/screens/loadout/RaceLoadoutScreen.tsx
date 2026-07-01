@@ -76,6 +76,16 @@ function getDriverRating(driver: Driver | undefined) {
   return driver ? getOverallScore(driver.stats) : 0;
 }
 
+function getPartRating(part: CarPart | undefined) {
+  const values = Object.values(part?.stats ?? {}).filter((value): value is number => typeof value === "number");
+
+  if (!values.length) {
+    return 0;
+  }
+
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
 function shortStatLabel(value: string) {
   return value
     .replace("topSpeed", "Speed")
@@ -164,7 +174,7 @@ function ComponentCard({ slot, part, onClick }: { slot: string; part: CarPart | 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_95%,rgba(239,68,68,0.18),transparent_34%)]" />
       <div className="relative z-10 grid grid-cols-[1fr_auto] gap-2">
         <p className="truncate text-[9px] font-black uppercase tracking-[0.12em] text-zinc-300">{label(slot)}</p>
-        <p className="text-[8px] font-black uppercase text-zinc-500">OVR {part ? Math.max(0, getOverallScore(part.stats)) : "--"}</p>
+        <p className="text-[8px] font-black uppercase text-zinc-500">OVR {part ? getPartRating(part) : "--"}</p>
       </div>
 
       {part?.imagePath ? (
