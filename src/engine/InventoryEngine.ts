@@ -3,7 +3,8 @@ import type { CarPart, CarPartType, Driver, TeamMember, TeamSlotType } from "@/t
 import type { GameInventorySlot, GameState } from "./GameState";
 
 export const GARAGE_GRID_COLUMNS = 10;
-export const GARAGE_MIN_ROWS = 40;
+export const GARAGE_GRID_ROWS = 40;
+export const GARAGE_MIN_ROWS = GARAGE_GRID_ROWS;
 export const GARAGE_PICKER_MIN_ROWS = 8;
 
 export type HydratedGarageSlot = GameInventorySlot & {
@@ -164,7 +165,8 @@ export const InventoryEngine = {
     if (
       movingRect.column < 0 ||
       movingRect.row < 0 ||
-      movingRect.column + movingRect.width > GARAGE_GRID_COLUMNS
+      movingRect.column + movingRect.width > GARAGE_GRID_COLUMNS ||
+      movingRect.row + movingRect.height > GARAGE_GRID_ROWS
     ) {
       return false;
     }
