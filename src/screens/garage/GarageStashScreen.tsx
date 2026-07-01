@@ -35,6 +35,18 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
+function ItemImage({ imagePath, alt, large = false }: { imagePath?: string; alt: string; large?: boolean }) {
+  if (!imagePath) {
+    return null;
+  }
+
+  return (
+    <div className={`${large ? "h-36" : "absolute inset-0"} flex items-center justify-center overflow-hidden rounded-2xl bg-black/25 p-2`}>
+      <img src={imagePath} alt={alt} className="max-h-full max-w-full object-contain" draggable={false} />
+    </div>
+  );
+}
+
 function StatPill({ stat, value }: { stat: string; value: number }) {
   return (
     <div className="rounded-xl bg-zinc-950 p-2">
@@ -69,6 +81,8 @@ function ItemInfoSheet({ slot, onClose }: { slot: HydratedGarageSlot; onClose: (
             Close
           </button>
         </div>
+
+        {slot.item.imagePath && <div className="mt-4"><ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} large /></div>}
 
         <p className="mt-4 text-sm leading-6 text-zinc-300">{slot.item.description}</p>
 
@@ -355,7 +369,7 @@ export function GarageStashScreen() {
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
                 onPointerCancel={() => setDragState(null)}
-                className={`z-20 overflow-hidden rounded-xl border p-2 text-left shadow-lg transition-transform active:scale-[0.98] ${
+                className={`relative z-20 overflow-hidden rounded-xl border p-2 text-left shadow-lg transition-transform active:scale-[0.98] ${
                   isBeingDragged && dragState?.isValid === false
                     ? "border-red-400 bg-red-950/80"
                     : isSelected
@@ -368,12 +382,15 @@ export function GarageStashScreen() {
                   opacity: isBeingDragged && dragState?.isValid === false ? 0.8 : 1,
                 }}
               >
-                <div className="flex items-start justify-between gap-1">
+                <ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} />
+                <div className="relative z-10 flex items-start justify-between gap-1">
                   <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
                   <p className="text-[10px] text-zinc-500">{width}x{height}</p>
                 </div>
-                <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
-                <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
+                <div className="relative z-10 mt-5 rounded bg-black/55 p-1">
+                  <p className="text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
+                  <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
+                </div>
               </button>
             );
           })}
