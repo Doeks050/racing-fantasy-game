@@ -309,10 +309,7 @@ export function GarageStashScreen() {
 
   return (
     <div className="grid gap-3 pb-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Team Storage</p>
-        <h2 className="mt-1 text-3xl font-black text-zinc-50">Pitbox</h2>
-      </div>
+      <h2 className="text-3xl font-black text-zinc-50">Pitbox</h2>
 
       <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/25">
         <div
