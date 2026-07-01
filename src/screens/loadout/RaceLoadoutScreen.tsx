@@ -33,17 +33,18 @@ type PartSlotPlacement = {
   slot: CarSlotType;
   side: "left" | "right";
   top: number;
+  lineLength: number;
 };
 
 const partSlotPlacements: PartSlotPlacement[] = [
-  { slot: "rear_wing", side: "left", top: 24 },
-  { slot: "engine", side: "left", top: 108 },
-  { slot: "floor", side: "left", top: 318 },
-  { slot: "front_wing", side: "left", top: 488 },
-  { slot: "gearbox", side: "right", top: 156 },
-  { slot: "chassis", side: "right", top: 238 },
-  { slot: "suspension", side: "right", top: 382 },
-  { slot: "brakes", side: "right", top: 444 },
+  { slot: "rear_wing", side: "left", top: 24, lineLength: 88 },
+  { slot: "engine", side: "left", top: 112, lineLength: 98 },
+  { slot: "floor", side: "left", top: 318, lineLength: 82 },
+  { slot: "front_wing", side: "left", top: 520, lineLength: 72 },
+  { slot: "gearbox", side: "right", top: 156, lineLength: 88 },
+  { slot: "chassis", side: "right", top: 238, lineLength: 132 },
+  { slot: "suspension", side: "right", top: 392, lineLength: 34 },
+  { slot: "brakes", side: "right", top: 466, lineLength: 30 },
 ];
 
 const teamSlots = [
@@ -201,15 +202,19 @@ function PartNode({
   part,
   side,
   top,
+  lineLength,
   onClick,
 }: {
   slot: CarSlotType;
   part: CarPart | undefined;
   side: "left" | "right";
   top: number;
+  lineLength: number;
   onClick: () => void;
 }) {
   const positionStyle = side === "left" ? { left: 0, top } : { right: 0, top };
+  const lineStyle = side === "left" ? { right: -lineLength, width: lineLength } : { left: -lineLength, width: lineLength };
+  const dotStyle = side === "left" ? { right: -(lineLength + 6) } : { left: -(lineLength + 6) };
 
   return (
     <button
@@ -218,14 +223,12 @@ function PartNode({
       className="absolute z-20 min-h-[62px] w-[104px] rounded-lg border border-white/10 bg-zinc-950/95 p-2 text-left shadow-lg shadow-black/25 active:scale-[0.98]"
     >
       <span
-        className={`pointer-events-none absolute top-1/2 h-px w-[52px] bg-red-500/70 ${
-          side === "left" ? "-right-[52px]" : "-left-[52px]"
-        }`}
+        className="pointer-events-none absolute top-1/2 h-px bg-red-500/70"
+        style={lineStyle}
       />
       <span
-        className={`pointer-events-none absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] ${
-          side === "left" ? "-right-[58px]" : "-left-[58px]"
-        }`}
+        className="pointer-events-none absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"
+        style={dotStyle}
       />
 
       <div className="relative z-10 grid gap-1">
@@ -266,6 +269,7 @@ function RaceCarLoadoutMap({
             slot={placement.slot}
             side={placement.side}
             top={placement.top}
+            lineLength={placement.lineLength}
             part={resolvePart(car.parts[placement.slot], inventorySlots)}
             onClick={() => onSelectSlot(placement.slot)}
           />
