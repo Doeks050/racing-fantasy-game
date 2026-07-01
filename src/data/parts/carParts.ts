@@ -106,7 +106,7 @@ export const carParts: CarPart[] = [
     imagePath: "/parts/carbex-brake-kit.png",
     rarity: "common",
     value: 520,
-    gridSize: { width: 1, height: 1 },
+    gridSize: { width: 2, height: 2 },
     stats: {
       braking: 10,
       reliability: 4,
@@ -121,7 +121,7 @@ export const carParts: CarPart[] = [
     imagePath: "/parts/bremswerk-brake-kit.png",
     rarity: "common",
     value: 540,
-    gridSize: { width: 1, height: 1 },
+    gridSize: { width: 2, height: 2 },
     stats: {
       braking: 10,
       stability: 4,
@@ -136,7 +136,7 @@ export const carParts: CarPart[] = [
     imagePath: "/parts/vescari-brake-kit.png",
     rarity: "common",
     value: 560,
-    gridSize: { width: 1, height: 1 },
+    gridSize: { width: 2, height: 2 },
     stats: {
       braking: 10,
       tyreManagement: 4,
@@ -151,7 +151,7 @@ export const carParts: CarPart[] = [
     imagePath: "/parts/rps-brake-kit.png",
     rarity: "common",
     value: 580,
-    gridSize: { width: 1, height: 1 },
+    gridSize: { width: 2, height: 2 },
     stats: {
       braking: 13,
       reliability: -1,
