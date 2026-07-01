@@ -22,6 +22,18 @@ function itemSubtitle(slot: HydratedGarageSlot) {
   return slot.item.brand ? `${slot.item.brand} · ${label(slot.item.type)}` : label(slot.item.type);
 }
 
+function ItemThumb({ imagePath, alt }: { imagePath?: string; alt: string }) {
+  if (!imagePath) {
+    return null;
+  }
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-1 opacity-90">
+      <img src={imagePath} alt={alt} className="max-h-full max-w-full object-contain" draggable={false} />
+    </div>
+  );
+}
+
 export function GaragePickerScreen({
   mode,
   onBack,
@@ -123,18 +135,21 @@ export function GaragePickerScreen({
                 <button
                   key={slot.slotId}
                   onClick={() => onSelectCarPartSlot(slot)}
-                  className="z-20 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left shadow-lg active:scale-[0.98]"
+                  className="relative z-20 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left shadow-lg active:scale-[0.98]"
                   style={{
                     gridColumn: `${column + 1} / span ${width}`,
                     gridRow: `${row + 1} / span ${height}`,
                   }}
                 >
-                  <div className="flex items-start justify-between gap-1">
+                  <ItemThumb imagePath={slot.item.imagePath} alt={slot.item.name} />
+                  <div className="relative z-10 flex items-start justify-between gap-1">
                     <p className="text-[10px] uppercase text-cyan-300">{slot.item.rarity}</p>
                     <p className="text-[10px] text-zinc-500">{width}x{height}</p>
                   </div>
-                  <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
-                  <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
+                  <div className="relative z-10 mt-5 rounded bg-black/55 p-1">
+                    <p className="text-xs font-bold leading-tight text-zinc-100">{slot.item.name}</p>
+                    <p className="mt-1 text-[10px] text-zinc-500">{itemSubtitle(slot)}</p>
+                  </div>
                 </button>
               );
             })}
