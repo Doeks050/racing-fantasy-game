@@ -14,6 +14,8 @@ type Tab = "car1" | "car2" | "team";
 
 type CarTab = "car1" | "car2";
 
+const RACE_CAR_IMAGE_PATH = "/cars/race-car-top-down.png";
+
 const carSlots = [
   "engine",
   "chassis",
@@ -24,6 +26,11 @@ const carSlots = [
   "front_wing",
   "rear_wing",
 ] as const;
+
+type CarSlotType = (typeof carSlots)[number];
+
+const leftCarSlots: CarSlotType[] = ["front_wing", "suspension", "brakes", "floor"];
+const rightCarSlots: CarSlotType[] = ["rear_wing", "engine", "chassis", "gearbox"];
 
 const teamSlots = [
   "pit_crew",
@@ -150,45 +157,115 @@ function DriverCard({ driver, onClick }: { driver: Driver | undefined; onClick: 
   );
 }
 
-function CarVisual({ carLabel }: { carLabel: string }) {
+function RaceCarImageBox() {
+  const [imageFailed, setImageFailed] = useState(false);
+
   return (
-    <div className="relative min-h-[132px] overflow-hidden rounded-lg border border-white/10 bg-black/40 p-3">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_66%_36%,rgba(239,68,68,0.18),transparent_36%)]" />
-      <div className="absolute bottom-9 left-8 h-11 w-52 skew-x-[-18deg] rounded-md border border-red-500/35 bg-zinc-950 shadow-[0_0_32px_rgba(239,68,68,0.14)]" />
-      <div className="absolute bottom-8 left-14 h-7 w-7 rounded-full border-4 border-zinc-800 bg-black" />
-      <div className="absolute bottom-8 right-12 h-7 w-7 rounded-full border-4 border-zinc-800 bg-black" />
-      <div className="relative text-right">
-        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-zinc-500">Car Setup</p>
-        <h3 className="mt-1 text-base font-black uppercase text-zinc-100">{carLabel}</h3>
-      </div>
+    <div className="relative h-[360px] overflow-hidden rounded-lg border border-white/10 bg-black/55">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.16),transparent_48%)]" />
+      {!imageFailed ? (
+        <img
+          src={RACE_CAR_IMAGE_PATH}
+          alt="Race car top down"
+          onError={() => setImageFailed(true)}
+          className="relative z-10 h-full w-full object-contain p-1"
+          draggable={false}
+        />
+      ) : (
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center">
+          <div className="h-44 w-16 rounded-full border border-red-500/30 bg-zinc-950/80 shadow-[0_0_32px_rgba(239,68,68,0.16)]" />
+          <p className="mt-4 text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">Upload car image</p>
+          <p className="mt-1 break-all text-[9px] font-bold text-red-300">{RACE_CAR_IMAGE_PATH}</p>
+        </div>
+      )}
     </div>
   );
 }
 
-function ComponentCard({ slot, part, onClick }: { slot: string; part: CarPart | undefined; onClick: () => void }) {
+function PartNode({
+  slot,
+  part,
+  side,
+  onClick,
+}: {
+  slot: CarSlotType;
+  part: CarPart | undefined;
+  side: "left" | "right";
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
-      className="relative min-h-[118px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 p-2 text-left shadow-lg shadow-black/25 active:scale-[0.98]"
+      className="group relative min-h-[70px] rounded-lg border border-white/10 bg-zinc-950 p-2 text-left shadow-lg shadow-black/25 active:scale-[0.98]"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_95%,rgba(239,68,68,0.18),transparent_34%)]" />
-      <div className="relative z-10 grid grid-cols-[1fr_auto] gap-2">
-        <p className="truncate text-[9px] font-black uppercase tracking-[0.12em] text-zinc-300">{label(slot)}</p>
-        <p className="text-[8px] font-black uppercase text-zinc-500">OVR {part ? getPartRating(part) : "--"}</p>
-      </div>
+      <span
+        className={`pointer-events-none absolute top-1/2 h-px w-8 bg-red-500/65 ${
+          side === "left" ? "-right-8" : "-left-8"
+        }`}
+      />
+      <span
+        className={`pointer-events-none absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-red-500 ${
+          side === "left" ? "-right-9" : "-left-9"
+        }`}
+      />
 
-      {part?.imagePath ? (
-        <div className="absolute inset-x-2 bottom-6 top-7 flex items-center justify-center">
-          <img src={part.imagePath} alt={part.name} className="max-h-full max-w-full object-contain" draggable={false} />
+      <div className="relative z-10 grid gap-1">
+        <div className="grid grid-cols-[1fr_auto] gap-1">
+          <p className="truncate text-[8px] font-black uppercase tracking-[0.1em] text-zinc-400">{label(slot)}</p>
+          <p className="text-[8px] font-black text-red-300">{part ? getPartRating(part) : "--"}</p>
         </div>
-      ) : (
-        <div className="absolute inset-x-4 bottom-8 top-9 rounded-md border border-zinc-800 bg-black/40" />
-      )}
-
-      <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/65 px-2 py-1">
-        <p className="truncate text-[10px] font-bold text-zinc-100">{part?.name ?? "Empty"}</p>
+        <p className="line-clamp-2 text-[10px] font-bold leading-tight text-zinc-100">{part?.name ?? "Empty"}</p>
       </div>
     </button>
+  );
+}
+
+function RaceCarLoadoutMap({
+  car,
+  carId,
+  inventorySlots,
+  onSelectSlot,
+}: {
+  car: CarLoadout;
+  carId: CarTab;
+  inventorySlots: GameInventorySlot[];
+  onSelectSlot: (slot: CarSlotType) => void;
+}) {
+  return (
+    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
+      <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
+        <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">Car Parts</h3>
+        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
+      </div>
+
+      <div className="grid grid-cols-[82px_1fr_82px] gap-2">
+        <div className="z-20 grid content-between py-2">
+          {leftCarSlots.map((slot) => (
+            <PartNode
+              key={slot}
+              slot={slot}
+              side="left"
+              part={resolvePart(car.parts[slot], inventorySlots)}
+              onClick={() => onSelectSlot(slot)}
+            />
+          ))}
+        </div>
+
+        <RaceCarImageBox />
+
+        <div className="z-20 grid content-between py-2">
+          {rightCarSlots.map((slot) => (
+            <PartNode
+              key={slot}
+              slot={slot}
+              side="right"
+              part={resolvePart(car.parts[slot], inventorySlots)}
+              onClick={() => onSelectSlot(slot)}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -366,41 +443,20 @@ export function RaceLoadoutScreen() {
 
       {tab !== "team" ? (
         <>
-          <section className="grid gap-2 rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
-            <div className="grid grid-cols-[1fr_1.1fr] gap-2">
-              <DriverCard driver={driver} onClick={() => setIsDriverPickerOpen(true)} />
-              <CarVisual carLabel={activeCarId === "car1" ? "Car 1" : "Car 2"} />
-            </div>
-          </section>
+          <DriverCard driver={driver} onClick={() => setIsDriverPickerOpen(true)} />
 
-          <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
-            <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
-              <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">Equipped Components</h3>
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">Configure</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {carSlots.map((slot) => {
-                const inventorySlotId = car.parts[slot];
-                const part = resolvePart(inventorySlotId, inventorySlots);
-
-                return (
-                  <ComponentCard
-                    key={slot}
-                    slot={slot}
-                    part={part}
-                    onClick={() =>
-                      setPickerMode({
-                        type: "car_part",
-                        carId: activeCarId,
-                        slotType: slot,
-                      })
-                    }
-                  />
-                );
-              })}
-            </div>
-          </section>
+          <RaceCarLoadoutMap
+            car={car}
+            carId={activeCarId}
+            inventorySlots={inventorySlots}
+            onSelectSlot={(slotType) =>
+              setPickerMode({
+                type: "car_part",
+                carId: activeCarId,
+                slotType,
+              })
+            }
+          />
         </>
       ) : (
         <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
