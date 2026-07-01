@@ -49,7 +49,7 @@ const moreItems: { id: Screen; label: string; description: string }[] = [
 const navItems: { id: Screen; label: string; icon: string }[] = [
   { id: "home", label: "Home", icon: "⌂" },
   { id: "loadout", label: "Loadout", icon: "◇" },
-  { id: "garage", label: "Stash", icon: "▦" },
+  { id: "garage", label: "Pitbox", icon: "▦" },
   { id: "market", label: "Market", icon: "↗" },
   { id: "upgrades", label: "Draft", icon: "✦" },
 ];
