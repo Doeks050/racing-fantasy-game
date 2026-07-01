@@ -18,6 +18,22 @@ function listingSubtitle(listing: HydratedMarketListing) {
   return listing.item.brand ? `${listing.item.brand} · ${label(listing.item.type)}` : label(listing.item.type);
 }
 
+function getListingImagePath(listing: HydratedMarketListing) {
+  return listing.kind === "car_part" ? listing.item.imagePath : undefined;
+}
+
+function ItemImage({ imagePath, alt, large = false }: { imagePath?: string; alt: string; large?: boolean }) {
+  if (!imagePath) {
+    return null;
+  }
+
+  return (
+    <div className={`${large ? "h-36" : "absolute inset-0"} flex items-center justify-center overflow-hidden rounded-2xl bg-black/25 p-2`}>
+      <img src={imagePath} alt={alt} className="max-h-full max-w-full object-contain" draggable={false} />
+    </div>
+  );
+}
+
 function StatPill({ stat, value }: { stat: string; value: number }) {
   return (
     <div className="rounded-xl bg-zinc-950 p-2">
@@ -43,6 +59,7 @@ function MarketItemInfoSheet({
   const description = listing.kind === "car_part" ? listing.item.description : "Driver contract available through the Driver Agency.";
   const stats = listing.kind === "car_part" ? listing.item.stats : listing.item.stats;
   const canAfford = credits >= listing.price;
+  const imagePath = getListingImagePath(listing);
 
   function handleBuy() {
     if (!canAfford) {
@@ -74,6 +91,8 @@ function MarketItemInfoSheet({
             Close
           </button>
         </div>
+
+        {imagePath && <div className="mt-4"><ItemImage imagePath={imagePath} alt={listing.item.name} large /></div>}
 
         <p className="mt-4 text-sm leading-6 text-zinc-300">{description}</p>
 
@@ -194,24 +213,28 @@ export function MarketScreen() {
             const width = listing.isRotated ? listing.item.gridSize.height : listing.item.gridSize.width;
             const height = listing.isRotated ? listing.item.gridSize.width : listing.item.gridSize.height;
             const typeLabel = listingSubtitle(listing);
+            const imagePath = getListingImagePath(listing);
 
             return (
               <button
                 key={listing.id}
                 onClick={() => setInfoListingId(listing.id)}
-                className="z-10 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left shadow-lg active:scale-[0.98]"
+                className="relative z-10 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 p-2 text-left shadow-lg active:scale-[0.98]"
                 style={{
                   gridColumn: `${listing.gridPosition.column + 1} / span ${width}`,
                   gridRow: `${listing.gridPosition.row + 1} / span ${height}`,
                 }}
               >
-                <div className="flex items-start justify-between gap-1">
+                <ItemImage imagePath={imagePath} alt={listing.item.name} />
+                <div className="relative z-10 flex items-start justify-between gap-1">
                   <p className="text-[10px] uppercase text-cyan-300">{listing.item.rarity}</p>
                   <p className="text-[10px] text-zinc-500">{width}x{height}</p>
                 </div>
-                <p className="mt-1 text-xs font-bold leading-tight text-zinc-100">{listing.item.name}</p>
-                <p className="mt-1 text-[10px] text-zinc-500">{typeLabel}</p>
-                <p className="mt-1 text-[10px] font-black text-cyan-300">{listing.price} cr</p>
+                <div className="relative z-10 mt-5 rounded bg-black/55 p-1">
+                  <p className="text-xs font-bold leading-tight text-zinc-100">{listing.item.name}</p>
+                  <p className="mt-1 text-[10px] text-zinc-500">{typeLabel}</p>
+                  <p className="mt-1 text-[10px] font-black text-cyan-300">{listing.price} cr</p>
+                </div>
               </button>
             );
           })}
