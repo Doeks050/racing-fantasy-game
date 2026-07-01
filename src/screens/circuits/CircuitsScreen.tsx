@@ -95,20 +95,7 @@ const circuitDetails: Record<
   },
 };
 
-export function CircuitsScreen() {
-  const [selectedCircuitId, setSelectedCircuitId] = useState(circuits[0]?.id ?? "");
-  const selectedCircuit = circuits.find((circuit) => circuit.id === selectedCircuitId) ?? circuits[0];
-  const details = selectedCircuit ? circuitDetails[selectedCircuit.id] : undefined;
-
-  if (!selectedCircuit) {
-    return (
-      <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-black">Circuits</h2>
-        <p className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-400">No circuits available.</p>
-      </div>
-    );
-  }
-
+function CircuitList({ onSelectCircuit }: { onSelectCircuit: (circuitId: string) => void }) {
   return (
     <div className="flex flex-col gap-4 pb-4">
       <div>
@@ -117,67 +104,77 @@ export function CircuitsScreen() {
       </div>
 
       <div className="grid gap-2">
-        {circuits.map((circuit) => {
-          const isSelected = circuit.id === selectedCircuit.id;
-
-          return (
-            <button
-              key={circuit.id}
-              onClick={() => setSelectedCircuitId(circuit.id)}
-              className={`rounded-2xl border p-4 text-left active:scale-[0.98] ${
-                isSelected ? "border-red-500/50 bg-red-950/25" : "border-zinc-800 bg-zinc-900"
-              }`}
-            >
-              <div className="grid grid-cols-[1fr_auto] items-start gap-3">
-                <div>
-                  <h3 className="text-lg font-black text-zinc-100">{circuit.name}</h3>
-                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
-                    {circuit.country} {circuit.countryFlag}
-                  </p>
-                </div>
-                <span className="rounded-md bg-black/35 px-2 py-1 text-[10px] font-black text-red-300">
-                  {formatLapTime(circuit.referenceLapTimeMs)}
-                </span>
+        {circuits.map((circuit) => (
+          <button
+            key={circuit.id}
+            onClick={() => onSelectCircuit(circuit.id)}
+            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left active:scale-[0.98]"
+          >
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3">
+              <div>
+                <h3 className="text-lg font-black text-zinc-100">{circuit.name}</h3>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                  {circuit.country} {circuit.countryFlag}
+                </p>
               </div>
-              <p className="mt-3 text-xs text-zinc-500">
-                Tyre {circuit.tyreWear} · Reliability {circuit.reliabilityStress} · Overtaking {circuit.overtakingDifficulty} · Wet {circuit.wetChance}%
-              </p>
-            </button>
-          );
-        })}
+              <span className="rounded-md bg-black/35 px-2 py-1 text-[10px] font-black text-red-300">
+                {formatLapTime(circuit.referenceLapTimeMs)}
+              </span>
+            </div>
+            <p className="mt-3 text-xs text-zinc-500">
+              Tyre {circuit.tyreWear} · Reliability {circuit.reliabilityStress} · Overtaking {circuit.overtakingDifficulty} · Wet {circuit.wetChance}%
+            </p>
+            <p className="mt-3 text-[10px] font-black uppercase tracking-[0.14em] text-red-400">View details ›</p>
+          </button>
+        ))}
       </div>
+    </div>
+  );
+}
+
+function CircuitDetail({ circuit, onBack }: { circuit: Circuit; onBack: () => void }) {
+  const details = circuitDetails[circuit.id];
+
+  return (
+    <div className="flex flex-col gap-4 pb-4">
+      <button
+        onClick={onBack}
+        className="w-fit rounded-md border border-white/10 bg-zinc-950 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-zinc-300 active:scale-[0.98]"
+      >
+        ← Back to circuits
+      </button>
 
       <section className="rounded-3xl border border-red-500/30 bg-zinc-900 p-4 shadow-xl shadow-black/20">
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Circuit Detail</p>
-        <h3 className="mt-1 text-3xl font-black uppercase leading-none text-zinc-50">{selectedCircuit.name}</h3>
+        <h3 className="mt-1 text-3xl font-black uppercase leading-none text-zinc-50">{circuit.name}</h3>
         <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
           {details?.archetype ?? "Race Circuit"}
         </p>
         {details?.summary && <p className="mt-3 text-sm leading-6 text-zinc-400">{details.summary}</p>}
 
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <StatPill label="Ref Lap" value={formatLapTime(selectedCircuit.referenceLapTimeMs)} />
-          <StatPill label="Laps" value={selectedCircuit.laps} />
-          <StatPill label="Benchmark" value={selectedCircuit.benchmarkRating} />
-          <StatPill label="Wet Chance" value={`${selectedCircuit.wetChance}%`} />
+          <StatPill label="Ref Lap" value={formatLapTime(circuit.referenceLapTimeMs)} />
+          <StatPill label="Laps" value={circuit.laps} />
+          <StatPill label="Benchmark" value={circuit.benchmarkRating} />
+          <StatPill label="Wet Chance" value={`${circuit.wetChance}%`} />
         </div>
       </section>
 
       <section className="grid grid-cols-2 gap-2">
-        <StatPill label="Tyre Wear" value={selectedCircuit.tyreWear} />
-        <StatPill label="Reliability" value={selectedCircuit.reliabilityStress} />
-        <StatPill label="Overtaking" value={selectedCircuit.overtakingDifficulty} />
+        <StatPill label="Tyre Wear" value={circuit.tyreWear} />
+        <StatPill label="Reliability" value={circuit.reliabilityStress} />
+        <StatPill label="Overtaking" value={circuit.overtakingDifficulty} />
         <StatPill label="Length" value="5.742km" />
       </section>
 
       <div className="grid gap-3">
-        {selectedCircuit.sectors.map((sector, index) => (
+        {circuit.sectors.map((sector, index) => (
           <SectorCard
             key={index}
             sectorNumber={index + 1}
             title={details?.sectorTitles[index] ?? `Sector ${index + 1}`}
             description={details?.sectorDescriptions[index] ?? "Sector profile"}
-            timeMs={selectedCircuit.referenceSectorTimesMs[index]}
+            timeMs={circuit.referenceSectorTimesMs[index]}
             weights={sector}
           />
         ))}
@@ -197,4 +194,26 @@ export function CircuitsScreen() {
       )}
     </div>
   );
+}
+
+export function CircuitsScreen() {
+  const [selectedCircuitId, setSelectedCircuitId] = useState<string | null>(null);
+  const selectedCircuit = selectedCircuitId
+    ? circuits.find((circuit) => circuit.id === selectedCircuitId)
+    : undefined;
+
+  if (!circuits.length) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h2 className="text-2xl font-black">Circuits</h2>
+        <p className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-400">No circuits available.</p>
+      </div>
+    );
+  }
+
+  if (selectedCircuit) {
+    return <CircuitDetail circuit={selectedCircuit} onBack={() => setSelectedCircuitId(null)} />;
+  }
+
+  return <CircuitList onSelectCircuit={setSelectedCircuitId} />;
 }
