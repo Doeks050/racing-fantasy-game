@@ -2,7 +2,7 @@ import { carParts, drivers, teamMembers } from "@/data";
 import type { CarPart, CarPartType, Driver, TeamMember, TeamSlotType } from "@/types";
 import type { GameInventorySlot, GameState } from "./GameState";
 
-export const GARAGE_GRID_COLUMNS = 6;
+export const GARAGE_GRID_COLUMNS = 10;
 export const GARAGE_MIN_ROWS = 8;
 
 export type HydratedGarageSlot = GameInventorySlot & {
