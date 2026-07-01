@@ -29,22 +29,11 @@ const carSlots = [
 
 type CarSlotType = (typeof carSlots)[number];
 
-type PartSlotPlacement = {
-  slot: CarSlotType;
-  side: "left" | "right";
-  top: number;
-  lineLength: number;
-};
-
-const partSlotPlacements: PartSlotPlacement[] = [
-  { slot: "rear_wing", side: "left", top: 24, lineLength: 88 },
-  { slot: "engine", side: "left", top: 112, lineLength: 98 },
-  { slot: "floor", side: "left", top: 318, lineLength: 82 },
-  { slot: "front_wing", side: "left", top: 520, lineLength: 72 },
-  { slot: "gearbox", side: "right", top: 156, lineLength: 88 },
-  { slot: "chassis", side: "right", top: 238, lineLength: 132 },
-  { slot: "suspension", side: "right", top: 392, lineLength: 34 },
-  { slot: "brakes", side: "right", top: 466, lineLength: 30 },
+const partSlotRows: [CarSlotType, CarSlotType][] = [
+  ["rear_wing", "engine"],
+  ["gearbox", "chassis"],
+  ["floor", "suspension"],
+  ["front_wing", "brakes"],
 ];
 
 const teamSlots = [
@@ -172,7 +161,7 @@ function DriverCard({ driver, onClick }: { driver: Driver | undefined; onClick: 
   );
 }
 
-function RaceCarImageBox() {
+function RaceCarBackground() {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
@@ -183,12 +172,12 @@ function RaceCarImageBox() {
           src={RACE_CAR_IMAGE_PATH}
           alt="Race car top down"
           onError={() => setImageFailed(true)}
-          className="absolute left-1/2 top-1/2 h-[560px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain"
+          className="absolute left-1/2 top-1/2 h-[470px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-60"
           draggable={false}
         />
       ) : (
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center">
-          <div className="h-72 w-24 rounded-full border border-red-500/30 bg-zinc-950/80 shadow-[0_0_32px_rgba(239,68,68,0.16)]" />
+          <div className="h-64 w-20 rounded-full border border-red-500/30 bg-zinc-950/80 shadow-[0_0_32px_rgba(239,68,68,0.16)]" />
           <p className="mt-4 text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">Upload car image</p>
           <p className="mt-1 break-all text-[9px] font-bold text-red-300">{RACE_CAR_IMAGE_PATH}</p>
         </div>
@@ -197,47 +186,18 @@ function RaceCarImageBox() {
   );
 }
 
-function PartNode({
-  slot,
-  part,
-  side,
-  top,
-  lineLength,
-  onClick,
-}: {
-  slot: CarSlotType;
-  part: CarPart | undefined;
-  side: "left" | "right";
-  top: number;
-  lineLength: number;
-  onClick: () => void;
-}) {
-  const positionStyle = side === "left" ? { left: 0, top } : { right: 0, top };
-  const lineStyle = side === "left" ? { right: -lineLength, width: lineLength } : { left: -lineLength, width: lineLength };
-  const dotStyle = side === "left" ? { right: -(lineLength + 6) } : { left: -(lineLength + 6) };
-
+function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPart | undefined; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      style={positionStyle}
-      className="absolute z-20 min-h-[62px] w-[104px] rounded-lg border border-white/10 bg-zinc-950/95 p-2 text-left shadow-lg shadow-black/25 active:scale-[0.98]"
+      className="relative z-20 min-h-[82px] rounded-lg border border-white/10 bg-zinc-950/90 p-3 text-left shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
     >
-      <span
-        className="pointer-events-none absolute top-1/2 h-px bg-red-500/70"
-        style={lineStyle}
-      />
-      <span
-        className="pointer-events-none absolute top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"
-        style={dotStyle}
-      />
-
-      <div className="relative z-10 grid gap-1">
-        <div className="grid grid-cols-[1fr_auto] gap-1">
-          <p className="truncate text-[8px] font-black uppercase tracking-[0.1em] text-zinc-400">{label(slot)}</p>
-          <p className="text-[8px] font-black text-red-300">{part ? getPartRating(part) : "--"}</p>
-        </div>
-        <p className="line-clamp-2 text-[10px] font-bold leading-tight text-zinc-100">{part?.name ?? "Empty"}</p>
+      <div className="grid grid-cols-[1fr_auto] gap-2">
+        <p className="truncate text-[8px] font-black uppercase tracking-[0.12em] text-zinc-400">{label(slot)}</p>
+        <p className="text-[8px] font-black text-red-300">OVR {part ? getPartRating(part) : "--"}</p>
       </div>
+      <p className="mt-2 line-clamp-2 text-[12px] font-black leading-tight text-zinc-100">{part?.name ?? "Empty"}</p>
+      <p className="mt-2 text-[9px] font-bold uppercase tracking-[0.12em] text-red-300">Configure</p>
     </button>
   );
 }
@@ -260,20 +220,19 @@ function RaceCarLoadoutMap({
         <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
       </div>
 
-      <div className="relative min-h-[590px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45">
-        <RaceCarImageBox />
+      <div className="relative min-h-[420px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45 p-3">
+        <RaceCarBackground />
 
-        {partSlotPlacements.map((placement) => (
-          <PartNode
-            key={placement.slot}
-            slot={placement.slot}
-            side={placement.side}
-            top={placement.top}
-            lineLength={placement.lineLength}
-            part={resolvePart(car.parts[placement.slot], inventorySlots)}
-            onClick={() => onSelectSlot(placement.slot)}
-          />
-        ))}
+        <div className="relative z-10 grid h-full min-h-[392px] grid-cols-2 content-between gap-3">
+          {partSlotRows.flatMap(([leftSlot, rightSlot]) => [leftSlot, rightSlot]).map((slot) => (
+            <PartSlotCard
+              key={slot}
+              slot={slot}
+              part={resolvePart(car.parts[slot], inventorySlots)}
+              onClick={() => onSelectSlot(slot)}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
