@@ -5,7 +5,8 @@ import type { GameInventorySlot, GameState } from "./GameState";
 export const MARKET_GRID_COLUMNS = 6;
 export const MARKET_MIN_ROWS = 6;
 const GARAGE_GRID_COLUMNS = 10;
-const GARAGE_SCAN_ROWS = 60;
+const GARAGE_GRID_ROWS = 40;
+const GARAGE_SCAN_ROWS = GARAGE_GRID_ROWS;
 
 type HydratedCarPartListing = MarketListing & {
   kind: "car_part";
@@ -75,7 +76,8 @@ function canPlaceGarageItem(state: GameState, params: { column: number; row: num
   if (
     movingRect.column < 0 ||
     movingRect.row < 0 ||
-    movingRect.column + movingRect.width > GARAGE_GRID_COLUMNS
+    movingRect.column + movingRect.width > GARAGE_GRID_COLUMNS ||
+    movingRect.row + movingRect.height > GARAGE_GRID_ROWS
   ) {
     return false;
   }
