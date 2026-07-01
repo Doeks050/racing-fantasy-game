@@ -78,12 +78,12 @@ export function GaragePickerScreen({
 
       <div>
         <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">
-          {mode.type === "car_part" ? "Garage Stash Picker" : "Garage Picker"}
+          {mode.type === "car_part" ? "Pitbox Picker" : "Garage Picker"}
         </p>
         <h2 className="mt-1 text-2xl font-black">{title}</h2>
         {mode.type === "car_part" && (
           <p className="mt-1 text-sm text-zinc-500">
-            Choose a compatible loose part from your stash grid.
+            Choose a compatible loose part from your Pitbox.
           </p>
         )}
       </div>
@@ -96,7 +96,7 @@ export function GaragePickerScreen({
           <p className="text-xs uppercase tracking-[0.2em] text-red-300">Mounted Part</p>
           <h3 className="mt-1 text-lg font-black text-zinc-100">Remove from car</h3>
           <p className="mt-2 text-sm text-zinc-400">
-            Demount this part and move it back into Garage Stash.
+            Demount this part and move it back into the Pitbox.
           </p>
         </button>
       )}
@@ -124,7 +124,7 @@ export function GaragePickerScreen({
             {carPartSlots.length === 0 && (
               <div className="pointer-events-none z-10 col-span-10 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
                 <div>
-                  <p className="text-sm font-black text-zinc-300">No compatible stash parts</p>
+                  <p className="text-sm font-black text-zinc-300">No compatible Pitbox parts</p>
                   <p className="mt-1 text-xs text-zinc-500">
                     Remove the mounted part first or buy a compatible part in the market.
                   </p>
