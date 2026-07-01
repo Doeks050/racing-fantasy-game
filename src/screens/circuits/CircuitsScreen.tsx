@@ -4,18 +4,6 @@ import { useState } from "react";
 import { circuits } from "@/data";
 import type { Circuit } from "@/types";
 
-function formatLapTime(ms: number) {
-  const totalSeconds = ms / 1000;
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds - minutes * 60;
-
-  return `${minutes}:${seconds.toFixed(3).padStart(6, "0")}`;
-}
-
-function formatSectorTime(ms: number) {
-  return (ms / 1000).toFixed(3);
-}
-
 function StatPill({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/35 p-3">
@@ -25,43 +13,21 @@ function StatPill({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-function SectorCard({
-  sectorNumber,
-  title,
-  description,
-  timeMs,
-  weights,
-}: {
-  sectorNumber: number;
-  title: string;
-  description: string;
-  timeMs: number;
-  weights: Circuit["sectors"][number];
-}) {
-  const orderedWeights = Object.entries(weights).sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+function InfoRow({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl bg-black/35 px-3 py-2">
+      <span className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500">{label}</span>
+      <span className="text-xs font-black text-zinc-200">{value}</span>
+    </div>
+  );
+}
 
+function SectorOverview({ sectorNumber, title, description }: { sectorNumber: number; title: string; description: string }) {
   return (
     <section className="rounded-2xl border border-white/10 bg-zinc-950 p-3">
-      <div className="grid grid-cols-[1fr_auto] items-start gap-3">
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.16em] text-red-400">Sector {sectorNumber}</p>
-          <h4 className="mt-1 text-sm font-black text-zinc-100">{title}</h4>
-          <p className="mt-1 text-xs leading-5 text-zinc-500">{description}</p>
-        </div>
-        <div className="rounded-lg border border-red-500/20 bg-red-950/20 px-2 py-1 text-right">
-          <p className="text-[8px] uppercase tracking-[0.12em] text-zinc-500">Ref</p>
-          <p className="text-xs font-black text-red-300">{formatSectorTime(timeMs)}</p>
-        </div>
-      </div>
-
-      <div className="mt-3 grid gap-1.5">
-        {orderedWeights.map(([stat, weight]) => (
-          <div key={stat} className="grid grid-cols-[1fr_38px] items-center gap-2 text-[10px]">
-            <span className="truncate font-bold uppercase text-zinc-300">{stat}</span>
-            <span className="text-right font-black text-zinc-500">{weight}</span>
-          </div>
-        ))}
-      </div>
+      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-red-400">Sector {sectorNumber}</p>
+      <h4 className="mt-1 text-sm font-black text-zinc-100">{title}</h4>
+      <p className="mt-1 text-xs leading-5 text-zinc-500">{description}</p>
     </section>
   );
 }
@@ -71,26 +37,25 @@ const circuitDetails: Record<
   {
     archetype: string;
     summary: string;
+    lengthKm: string;
+    turns: number;
+    fastestLapAllTime?: string;
     sectorTitles: [string, string, string];
     sectorDescriptions: [string, string, string];
-    gameplayNotes: string[];
   }
 > = {
   circuit_1: {
     archetype: "Balanced / Technical Power",
     summary:
-      "Een gebalanceerd fantasy circuit met lange snelle stukken, zware remzones en een technisch middenstuk. De baan beloont niet alleen top speed, maar ook braking, cornering, stability en tyre management.",
+      "Een gebalanceerd fantasy circuit met lange snelle stukken, zware remzones en een technisch middenstuk. De baan is snel genoeg voor inhaalacties, maar technisch genoeg om slechte setups direct af te straffen.",
+    lengthKm: "5.742km",
+    turns: 16,
+    fastestLapAllTime: undefined,
     sectorTitles: ["Main Straight & Upper Run", "Technical Core", "Lower Sweep & Final Return"],
     sectorDescriptions: [
       "Lange start/finish sectie, snelle bovenste run en een stevige remzone richting het technische deel.",
       "Het lastigste deel van de baan: korte bochten, richtingswissels en een smalle technische middensectie.",
       "Lange bochtbelasting, exit speed en de onderste run terug richting start/finish.",
-    ],
-    gameplayNotes: [
-      "Starter teams verliezen vooral tijd in Sector 2 door gebrek aan cornering en stability.",
-      "Sterke engines helpen in Sector 1 en Sector 3, maar winnen deze race niet alleen.",
-      "Tyre management is belangrijk genoeg om race pace over meerdere ronden te beïnvloeden.",
-      "Inhalen is redelijk mogelijk door de lange stukken, maar niet gratis.",
     ],
   },
 };
@@ -104,29 +69,31 @@ function CircuitList({ onSelectCircuit }: { onSelectCircuit: (circuitId: string)
       </div>
 
       <div className="grid gap-2">
-        {circuits.map((circuit) => (
-          <button
-            key={circuit.id}
-            onClick={() => onSelectCircuit(circuit.id)}
-            className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left active:scale-[0.98]"
-          >
-            <div className="grid grid-cols-[1fr_auto] items-start gap-3">
-              <div>
-                <h3 className="text-lg font-black text-zinc-100">{circuit.name}</h3>
-                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
-                  {circuit.country} {circuit.countryFlag}
-                </p>
+        {circuits.map((circuit) => {
+          const details = circuitDetails[circuit.id];
+
+          return (
+            <button
+              key={circuit.id}
+              onClick={() => onSelectCircuit(circuit.id)}
+              className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4 text-left active:scale-[0.98]"
+            >
+              <div className="grid grid-cols-[1fr_auto] items-start gap-3">
+                <div>
+                  <h3 className="text-lg font-black text-zinc-100">{circuit.name}</h3>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                    {details?.archetype ?? "Race Circuit"}
+                  </p>
+                </div>
+                <span className="rounded-md bg-black/35 px-2 py-1 text-[10px] font-black text-red-300">Details</span>
               </div>
-              <span className="rounded-md bg-black/35 px-2 py-1 text-[10px] font-black text-red-300">
-                {formatLapTime(circuit.referenceLapTimeMs)}
-              </span>
-            </div>
-            <p className="mt-3 text-xs text-zinc-500">
-              Tyre {circuit.tyreWear} · Reliability {circuit.reliabilityStress} · Overtaking {circuit.overtakingDifficulty} · Wet {circuit.wetChance}%
-            </p>
-            <p className="mt-3 text-[10px] font-black uppercase tracking-[0.14em] text-red-400">View details ›</p>
-          </button>
-        ))}
+              <p className="mt-3 text-xs text-zinc-500">
+                Length {details?.lengthKm ?? "--"} · Turns {details?.turns ?? "--"} · Tyre wear {circuit.tyreWear}
+              </p>
+              <p className="mt-3 text-[10px] font-black uppercase tracking-[0.14em] text-red-400">View circuit ›</p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -145,53 +112,45 @@ function CircuitDetail({ circuit, onBack }: { circuit: Circuit; onBack: () => vo
       </button>
 
       <section className="rounded-3xl border border-red-500/30 bg-zinc-900 p-4 shadow-xl shadow-black/20">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Circuit Detail</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Circuit Info</p>
         <h3 className="mt-1 text-3xl font-black uppercase leading-none text-zinc-50">{circuit.name}</h3>
         <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
           {details?.archetype ?? "Race Circuit"}
         </p>
         {details?.summary && <p className="mt-3 text-sm leading-6 text-zinc-400">{details.summary}</p>}
-
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <StatPill label="Ref Lap" value={formatLapTime(circuit.referenceLapTimeMs)} />
-          <StatPill label="Laps" value={circuit.laps} />
-          <StatPill label="Benchmark" value={circuit.benchmarkRating} />
-          <StatPill label="Wet Chance" value={`${circuit.wetChance}%`} />
-        </div>
       </section>
 
       <section className="grid grid-cols-2 gap-2">
+        <StatPill label="Length" value={details?.lengthKm ?? "--"} />
+        <StatPill label="Turns" value={details?.turns ?? "--"} />
+        <StatPill label="Laps" value={circuit.laps} />
         <StatPill label="Tyre Wear" value={circuit.tyreWear} />
-        <StatPill label="Reliability" value={circuit.reliabilityStress} />
-        <StatPill label="Overtaking" value={circuit.overtakingDifficulty} />
-        <StatPill label="Length" value="5.742km" />
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-zinc-950 p-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500">Fastest lap all-time</p>
+        <p className="mt-2 text-2xl font-black text-zinc-100">{details?.fastestLapAllTime ?? "No lap recorded"}</p>
+        <p className="mt-1 text-xs text-zinc-500">Wordt gevuld zodra er races op dit circuit gereden zijn.</p>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-zinc-950 p-4">
+        <h4 className="text-xs font-black uppercase tracking-[0.18em] text-zinc-300">General characteristics</h4>
+        <div className="mt-3 grid gap-2">
+          <InfoRow label="Overtaking" value={circuit.overtakingDifficulty} />
+          <InfoRow label="Reliability stress" value={circuit.reliabilityStress} />
+        </div>
       </section>
 
       <div className="grid gap-3">
-        {circuit.sectors.map((sector, index) => (
-          <SectorCard
+        {circuit.sectors.map((_, index) => (
+          <SectorOverview
             key={index}
             sectorNumber={index + 1}
             title={details?.sectorTitles[index] ?? `Sector ${index + 1}`}
-            description={details?.sectorDescriptions[index] ?? "Sector profile"}
-            timeMs={circuit.referenceSectorTimesMs[index]}
-            weights={sector}
+            description={details?.sectorDescriptions[index] ?? "Sector overview"}
           />
         ))}
       </div>
-
-      {details?.gameplayNotes && (
-        <section className="rounded-2xl border border-white/10 bg-zinc-950 p-4">
-          <h4 className="text-xs font-black uppercase tracking-[0.18em] text-zinc-300">Gameplay Notes</h4>
-          <div className="mt-3 grid gap-2">
-            {details.gameplayNotes.map((note) => (
-              <p key={note} className="rounded-lg bg-black/35 p-3 text-xs leading-5 text-zinc-400">
-                {note}
-              </p>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
