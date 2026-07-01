@@ -1,6 +1,6 @@
 "use client";
 
-import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
+import { GARAGE_GRID_COLUMNS, GARAGE_PICKER_MIN_ROWS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 import type { GaragePickerMode, TeamMember } from "@/types";
 
@@ -63,7 +63,7 @@ export function GaragePickerScreen({
         })
       : [];
 
-  const rowCount = InventoryEngine.getGridRowCount(carPartSlots);
+  const rowCount = InventoryEngine.getGridRowCount(carPartSlots, GARAGE_PICKER_MIN_ROWS);
 
   const teamItems =
     mode.type === "team_member"
