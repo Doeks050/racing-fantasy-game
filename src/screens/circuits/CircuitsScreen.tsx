@@ -10,8 +10,6 @@ type CircuitDetailContent = {
   turns: number;
   fastestLapAllTime?: string;
   layoutPath: string;
-  sectorTitles: [string, string, string];
-  sectorDescriptions: [string, string, string];
 };
 
 function StatPill({ label, value }: { label: string; value: string | number }) {
@@ -29,16 +27,6 @@ function InfoRow({ label, value }: { label: string; value: string | number }) {
       <span className="text-[10px] font-black uppercase tracking-[0.14em] text-zinc-500">{label}</span>
       <span className="text-xs font-black text-zinc-200">{value}</span>
     </div>
-  );
-}
-
-function SectorOverview({ sectorNumber, title, description }: { sectorNumber: number; title: string; description: string }) {
-  return (
-    <section className="rounded-2xl border border-white/10 bg-zinc-950 p-3">
-      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-red-400">Sector {sectorNumber}</p>
-      <h4 className="mt-1 text-sm font-black text-zinc-100">{title}</h4>
-      <p className="mt-1 text-xs leading-5 text-zinc-500">{description}</p>
-    </section>
   );
 }
 
@@ -95,12 +83,6 @@ const circuitDetails: Record<string, CircuitDetailContent> = {
     fastestLapAllTime: undefined,
     layoutPath:
       "M58 132 L58 50 Q58 26 84 26 L222 26 Q256 26 264 58 Q271 83 246 95 L204 116 Q184 127 197 145 Q211 163 242 157 L268 152 Q291 147 291 120 L291 93 Q291 73 273 66 L240 54 Q219 47 200 62 L169 88 Q151 103 126 103 L91 103 Q72 103 66 120 Q63 128 58 132 Z",
-    sectorTitles: ["Main Straight & Upper Run", "Technical Core", "Lower Sweep & Final Return"],
-    sectorDescriptions: [
-      "Lange start/finish sectie, snelle bovenste run en een stevige remzone richting het technische deel.",
-      "Korte bochten, richtingswissels en een smalle technische middensectie.",
-      "Lange bochtbelasting, exit speed en de onderste run terug richting start/finish.",
-    ],
   },
 };
 
@@ -177,17 +159,6 @@ function CircuitDetail({ circuit, onBack }: { circuit: Circuit; onBack: () => vo
           <InfoRow label="Reliability stress" value={circuit.reliabilityStress} />
         </div>
       </section>
-
-      <div className="grid gap-3">
-        {circuit.sectors.map((_, index) => (
-          <SectorOverview
-            key={index}
-            sectorNumber={index + 1}
-            title={details?.sectorTitles[index] ?? `Sector ${index + 1}`}
-            description={details?.sectorDescriptions[index] ?? "Sector overview"}
-          />
-        ))}
-      </div>
     </div>
   );
 }
