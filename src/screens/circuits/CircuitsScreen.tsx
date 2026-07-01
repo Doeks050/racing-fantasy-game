@@ -4,6 +4,16 @@ import { useState } from "react";
 import { circuits } from "@/data";
 import type { Circuit } from "@/types";
 
+type CircuitDetailContent = {
+  archetype: string;
+  lengthKm: string;
+  turns: number;
+  fastestLapAllTime?: string;
+  layoutPath: string;
+  sectorTitles: [string, string, string];
+  sectorDescriptions: [string, string, string];
+};
+
 function StatPill({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/35 p-3">
@@ -32,29 +42,63 @@ function SectorOverview({ sectorNumber, title, description }: { sectorNumber: nu
   );
 }
 
-const circuitDetails: Record<
-  string,
-  {
-    archetype: string;
-    summary: string;
-    lengthKm: string;
-    turns: number;
-    fastestLapAllTime?: string;
-    sectorTitles: [string, string, string];
-    sectorDescriptions: [string, string, string];
-  }
-> = {
+function CircuitCinematicPanel({ circuit, details }: { circuit: Circuit; details?: CircuitDetailContent }) {
+  const layoutPath =
+    details?.layoutPath ??
+    "M58 132 L58 50 Q58 26 84 26 L222 26 Q256 26 264 58 Q271 83 246 95 L204 116 Q184 127 197 145 Q211 163 242 157 L268 152 Q291 147 291 120 L291 93 Q291 73 273 66 L240 54 Q219 47 200 62 L169 88 Q151 103 126 103 L91 103 Q72 103 66 120 Q63 128 58 132 Z";
+
+  return (
+    <section className="relative h-52 overflow-hidden rounded-3xl border border-red-500/30 bg-zinc-950 shadow-xl shadow-black/20">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_18%,rgba(239,68,68,0.22),transparent_34%),radial-gradient(circle_at_78%_22%,rgba(255,255,255,0.08),transparent_28%),linear-gradient(135deg,#18181b_0%,#09090b_54%,#111827_100%)]" />
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black via-black/50 to-transparent" />
+      <div className="absolute left-6 top-8 h-28 w-44 rotate-[-12deg] rounded-full bg-red-500/10 blur-3xl" />
+      <div className="absolute bottom-8 right-2 h-24 w-40 rotate-[18deg] rounded-full bg-white/5 blur-3xl" />
+
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 320 180" role="img" aria-label={`${circuit.name} cinematic circuit image`}>
+        <defs>
+          <linearGradient id={`trackGradient-${circuit.id}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#fafafa" stopOpacity="0.9" />
+            <stop offset="45%" stopColor="#ef4444" stopOpacity="0.95" />
+            <stop offset="100%" stopColor="#fafafa" stopOpacity="0.75" />
+          </linearGradient>
+        </defs>
+        <path d={layoutPath} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="24" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={layoutPath} fill="none" stroke="rgba(0,0,0,0.62)" strokeWidth="15" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d={layoutPath}
+          fill="none"
+          stroke={`url(#trackGradient-${circuit.id})`}
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ filter: "drop-shadow(0 0 14px rgba(239,68,68,0.45))" }}
+        />
+        <path d="M60 128 L60 100" stroke="rgba(255,255,255,0.65)" strokeWidth="2" strokeDasharray="4 4" strokeLinecap="round" />
+      </svg>
+
+      <div className="absolute bottom-4 left-4 right-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-300">Circuit Image</p>
+        <h3 className="mt-1 text-3xl font-black uppercase leading-none text-zinc-50">{circuit.name}</h3>
+        <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-400">
+          {details?.archetype ?? "Race Circuit"}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+const circuitDetails: Record<string, CircuitDetailContent> = {
   circuit_1: {
     archetype: "Balanced / Technical Power",
-    summary:
-      "Een gebalanceerd fantasy circuit met lange snelle stukken, zware remzones en een technisch middenstuk. De baan is snel genoeg voor inhaalacties, maar technisch genoeg om slechte setups direct af te straffen.",
     lengthKm: "5.742km",
     turns: 16,
     fastestLapAllTime: undefined,
+    layoutPath:
+      "M58 132 L58 50 Q58 26 84 26 L222 26 Q256 26 264 58 Q271 83 246 95 L204 116 Q184 127 197 145 Q211 163 242 157 L268 152 Q291 147 291 120 L291 93 Q291 73 273 66 L240 54 Q219 47 200 62 L169 88 Q151 103 126 103 L91 103 Q72 103 66 120 Q63 128 58 132 Z",
     sectorTitles: ["Main Straight & Upper Run", "Technical Core", "Lower Sweep & Final Return"],
     sectorDescriptions: [
       "Lange start/finish sectie, snelle bovenste run en een stevige remzone richting het technische deel.",
-      "Het lastigste deel van de baan: korte bochten, richtingswissels en een smalle technische middensectie.",
+      "Korte bochten, richtingswissels en een smalle technische middensectie.",
       "Lange bochtbelasting, exit speed en de onderste run terug richting start/finish.",
     ],
   },
@@ -111,14 +155,7 @@ function CircuitDetail({ circuit, onBack }: { circuit: Circuit; onBack: () => vo
         ← Back to circuits
       </button>
 
-      <section className="rounded-3xl border border-red-500/30 bg-zinc-900 p-4 shadow-xl shadow-black/20">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Circuit Info</p>
-        <h3 className="mt-1 text-3xl font-black uppercase leading-none text-zinc-50">{circuit.name}</h3>
-        <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">
-          {details?.archetype ?? "Race Circuit"}
-        </p>
-        {details?.summary && <p className="mt-3 text-sm leading-6 text-zinc-400">{details.summary}</p>}
-      </section>
+      <CircuitCinematicPanel circuit={circuit} details={details} />
 
       <section className="grid grid-cols-2 gap-2">
         <StatPill label="Length" value={details?.lengthKm ?? "--"} />
