@@ -172,12 +172,12 @@ function RaceCarBackground() {
           src={RACE_CAR_IMAGE_PATH}
           alt="Race car top down"
           onError={() => setImageFailed(true)}
-          className="absolute left-1/2 top-1/2 h-[470px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-60"
+          className="absolute left-1/2 top-1/2 h-[390px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-40"
           draggable={false}
         />
       ) : (
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center">
-          <div className="h-64 w-20 rounded-full border border-red-500/30 bg-zinc-950/80 shadow-[0_0_32px_rgba(239,68,68,0.16)]" />
+          <div className="h-56 w-16 rounded-full border border-red-500/30 bg-zinc-950/80 shadow-[0_0_32px_rgba(239,68,68,0.16)]" />
           <p className="mt-4 text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">Upload car image</p>
           <p className="mt-1 break-all text-[9px] font-bold text-red-300">{RACE_CAR_IMAGE_PATH}</p>
         </div>
@@ -187,17 +187,31 @@ function RaceCarBackground() {
 }
 
 function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPart | undefined; onClick: () => void }) {
+  const fallbackLabel = label(slot).slice(0, 3);
+
   return (
     <button
       onClick={onClick}
-      className="relative z-20 min-h-[82px] rounded-lg border border-white/10 bg-zinc-950/90 p-3 text-left shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
+      className="relative z-20 min-h-[92px] rounded-lg border border-white/10 bg-zinc-950/92 p-2.5 text-left shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
     >
-      <div className="grid grid-cols-[1fr_auto] gap-2">
-        <p className="truncate text-[8px] font-black uppercase tracking-[0.12em] text-zinc-400">{label(slot)}</p>
-        <p className="text-[8px] font-black text-red-300">OVR {part ? getPartRating(part) : "--"}</p>
+      <div className="grid grid-cols-[46px_1fr] gap-2">
+        <div className="flex h-[46px] items-center justify-center overflow-hidden rounded-md border border-zinc-800 bg-black/55 p-1">
+          {part?.imagePath ? (
+            <img src={part.imagePath} alt={part.name} className="max-h-full max-w-full object-contain" draggable={false} />
+          ) : (
+            <span className="text-[10px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
+          )}
+        </div>
+
+        <div className="min-w-0">
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <p className="truncate text-[8px] font-black uppercase tracking-[0.12em] text-zinc-400">{label(slot)}</p>
+            <p className="text-[8px] font-black text-red-300">OVR {part ? getPartRating(part) : "--"}</p>
+          </div>
+          <p className="mt-1 line-clamp-2 text-[11px] font-black leading-tight text-zinc-100">{part?.name ?? "Empty"}</p>
+          <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.12em] text-red-300">Configure</p>
+        </div>
       </div>
-      <p className="mt-2 line-clamp-2 text-[12px] font-black leading-tight text-zinc-100">{part?.name ?? "Empty"}</p>
-      <p className="mt-2 text-[9px] font-bold uppercase tracking-[0.12em] text-red-300">Configure</p>
     </button>
   );
 }
@@ -220,10 +234,10 @@ function RaceCarLoadoutMap({
         <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
       </div>
 
-      <div className="relative min-h-[420px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45 p-3">
+      <div className="relative min-h-[416px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45 p-3">
         <RaceCarBackground />
 
-        <div className="relative z-10 grid h-full min-h-[392px] grid-cols-2 content-between gap-3">
+        <div className="relative z-10 grid h-full min-h-[392px] grid-cols-2 content-between gap-2">
           {partSlotRows.flatMap(([leftSlot, rightSlot]) => [leftSlot, rightSlot]).map((slot) => (
             <PartSlotCard
               key={slot}
