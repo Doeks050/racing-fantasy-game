@@ -11,22 +11,11 @@ import type { CarLoadout, CarPart, Driver, GaragePickerMode, TeamMember } from "
 import type { GameInventorySlot } from "@/engine";
 
 type Tab = "car1" | "car2" | "team";
-
 type CarTab = "car1" | "car2";
 
 const RACE_CAR_IMAGE_PATH = "/cars/race-car-top-down.png";
 
-const carSlots = [
-  "engine",
-  "chassis",
-  "gearbox",
-  "suspension",
-  "brakes",
-  "floor",
-  "front_wing",
-  "rear_wing",
-] as const;
-
+const carSlots = ["engine", "chassis", "gearbox", "suspension", "brakes", "floor", "front_wing", "rear_wing"] as const;
 type CarSlotType = (typeof carSlots)[number];
 
 const partSlotRows: [CarSlotType, CarSlotType][] = [
@@ -36,68 +25,15 @@ const partSlotRows: [CarSlotType, CarSlotType][] = [
   ["front_wing", "brakes"],
 ];
 
-const teamSlots = [
-  "pit_crew",
-  "strategist",
-  "race_engineer",
-  "data_analyst",
-  "mechanic_chief",
-] as const;
-
-const carStatKeys = [
-  "topSpeed",
-  "acceleration",
-  "cornering",
-  "braking",
-  "stability",
-  "reliability",
-  "tyreManagement",
-  "aeroEfficiency",
-] as const;
-
-const driverStatKeys = [
-  "pace",
-  "consistency",
-  "raceCraft",
-  "awareness",
-  "qualifying",
-  "tyreManagement",
-  "wetSkill",
-  "aggression",
-] as const;
+const teamSlots = ["pit_crew", "strategist", "race_engineer", "data_analyst", "mechanic_chief"] as const;
+const carStatKeys = ["topSpeed", "acceleration", "cornering", "braking", "stability", "reliability", "tyreManagement", "aeroEfficiency"] as const;
+const driverStatKeys = ["pace", "consistency", "raceCraft", "awareness", "qualifying", "tyreManagement", "wetSkill", "aggression"] as const;
 
 function label(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return value.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function getCarTab(tab: Tab): CarTab {
-  return tab === "car2" ? "car2" : "car1";
-}
-
-function resolvePart(loadoutValue: string | undefined, inventorySlots: GameInventorySlot[]) {
-  if (!loadoutValue) {
-    return undefined;
-  }
-
-  const inventorySlot = inventorySlots.find((slot) => slot.slotId === loadoutValue);
-  return carParts.find((item) => item.id === (inventorySlot?.entityId ?? loadoutValue));
-}
-
-function getDriverRating(driver: Driver | undefined) {
-  return driver ? getOverallScore(driver.stats) : 0;
-}
-
-function getPartRating(part: CarPart | undefined) {
-  const values = Object.values(part?.stats ?? {}).filter((value): value is number => typeof value === "number");
-
-  if (!values.length) {
-    return 0;
-  }
-
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
-}
-
-function shortStatLabel(value: string) {
+function shortLabel(value: string) {
   return value
     .replace("topSpeed", "Speed")
     .replace("acceleration", "Accel")
@@ -113,20 +49,26 @@ function shortStatLabel(value: string) {
     .replace("aggression", "Aggr");
 }
 
-function RatingBadge({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-md border border-red-500/30 bg-red-950/20 px-2 py-1 text-right">
-      <p className="text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">{label}</p>
-      <p className="text-sm font-black leading-none text-red-300">{value}</p>
-    </div>
-  );
+function getCarTab(tab: Tab): CarTab {
+  return tab === "car2" ? "car2" : "car1";
 }
 
-function MeterLine({ label, value }: { label: string; value: number }) {
+function resolvePart(loadoutValue: string | undefined, inventorySlots: GameInventorySlot[]) {
+  if (!loadoutValue) return undefined;
+
+  const inventorySlot = inventorySlots.find((slot) => slot.slotId === loadoutValue);
+  return carParts.find((part) => part.id === (inventorySlot?.entityId ?? loadoutValue));
+}
+
+function getDriverRating(driver: Driver | undefined) {
+  return driver ? getOverallScore(driver.stats) : 0;
+}
+
+function MeterLine({ name, value }: { name: string; value: number }) {
   return (
     <div>
-      <div className="mb-1 grid grid-cols-[1fr_auto] items-center gap-2 text-[9px]">
-        <span className="truncate font-bold uppercase text-zinc-500">{label}</span>
+      <div className="mb-1 grid grid-cols-[1fr_auto] text-[9px]">
+        <span className="truncate font-bold uppercase text-zinc-500">{name}</span>
         <span className="font-black text-zinc-300">{value}</span>
       </div>
       <div className="h-1 overflow-hidden rounded-sm bg-zinc-800">
@@ -138,10 +80,7 @@ function MeterLine({ label, value }: { label: string; value: number }) {
 
 function DriverCard({ driver, onClick }: { driver: Driver | undefined; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className="grid grid-cols-[64px_1fr] gap-3 rounded-lg border border-white/10 bg-black/45 p-3 text-left active:scale-[0.98]"
-    >
+    <button onClick={onClick} className="grid grid-cols-[64px_1fr] gap-3 rounded-lg border border-white/10 bg-black/45 p-3 text-left active:scale-[0.98]">
       <div className="relative h-20 overflow-hidden rounded-md border border-red-500/25 bg-zinc-950">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(239,68,68,0.22),transparent_48%)]" />
         <div className="absolute bottom-0 left-1/2 h-14 w-10 -translate-x-1/2 rounded-t-full bg-zinc-800" />
@@ -177,7 +116,7 @@ function RaceCarBackground() {
         />
       ) : (
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-3 text-center">
-          <div className="h-56 w-16 rounded-full border border-red-500/30 bg-zinc-950/80 shadow-[0_0_32px_rgba(239,68,68,0.16)]" />
+          <div className="h-56 w-16 rounded-full border border-red-500/30 bg-zinc-950/80" />
           <p className="mt-4 text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">Upload car image</p>
           <p className="mt-1 break-all text-[9px] font-bold text-red-300">{RACE_CAR_IMAGE_PATH}</p>
         </div>
@@ -192,26 +131,19 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
   return (
     <button
       onClick={onClick}
-      className="relative z-20 min-h-[92px] rounded-lg border border-white/10 bg-zinc-950/92 p-2.5 text-left shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
+      className="relative z-20 grid min-h-[122px] grid-rows-[auto_1fr_auto] rounded-lg border border-white/10 bg-zinc-950/92 p-2.5 text-center shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
     >
-      <div className="grid grid-cols-[46px_1fr] gap-2">
-        <div className="flex h-[46px] items-center justify-center overflow-hidden rounded-md border border-zinc-800 bg-black/55 p-1">
-          {part?.imagePath ? (
-            <img src={part.imagePath} alt={part.name} className="max-h-full max-w-full object-contain" draggable={false} />
-          ) : (
-            <span className="text-[10px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
-          )}
-        </div>
+      <p className="truncate text-[10px] font-black uppercase tracking-[0.12em] text-zinc-200">{label(slot)}</p>
 
-        <div className="min-w-0">
-          <div className="grid grid-cols-[1fr_auto] gap-2">
-            <p className="truncate text-[8px] font-black uppercase tracking-[0.12em] text-zinc-400">{label(slot)}</p>
-            <p className="text-[8px] font-black text-red-300">OVR {part ? getPartRating(part) : "--"}</p>
-          </div>
-          <p className="mt-1 line-clamp-2 text-[11px] font-black leading-tight text-zinc-100">{part?.name ?? "Empty"}</p>
-          <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.12em] text-red-300">Configure</p>
-        </div>
+      <div className="my-2 flex min-h-[62px] items-center justify-center overflow-hidden rounded-md border border-zinc-800 bg-black/55 p-1.5">
+        {part?.imagePath ? (
+          <img src={part.imagePath} alt={part.name} className="max-h-[76px] max-w-full object-contain" draggable={false} />
+        ) : (
+          <span className="text-[13px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
+        )}
       </div>
+
+      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-red-300">Configure</p>
     </button>
   );
 }
@@ -234,17 +166,12 @@ function RaceCarLoadoutMap({
         <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
       </div>
 
-      <div className="relative min-h-[416px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45 p-3">
+      <div className="relative min-h-[510px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45 p-3">
         <RaceCarBackground />
 
-        <div className="relative z-10 grid h-full min-h-[392px] grid-cols-2 content-between gap-2">
+        <div className="relative z-10 grid h-full min-h-[486px] grid-cols-2 content-between gap-2">
           {partSlotRows.flatMap(([leftSlot, rightSlot]) => [leftSlot, rightSlot]).map((slot) => (
-            <PartSlotCard
-              key={slot}
-              slot={slot}
-              part={resolvePart(car.parts[slot], inventorySlots)}
-              onClick={() => onSelectSlot(slot)}
-            />
+            <PartSlotCard key={slot} slot={slot} part={resolvePart(car.parts[slot], inventorySlots)} onClick={() => onSelectSlot(slot)} />
           ))}
         </div>
       </div>
@@ -252,17 +179,7 @@ function RaceCarLoadoutMap({
   );
 }
 
-function StatsColumn({
-  title,
-  car,
-  driver,
-  inventorySlots,
-}: {
-  title: string;
-  car: CarLoadout;
-  driver: Driver | undefined;
-  inventorySlots: GameInventorySlot[];
-}) {
+function StatsColumn({ title, car, driver, inventorySlots }: { title: string; car: CarLoadout; driver: Driver | undefined; inventorySlots: GameInventorySlot[] }) {
   const carStats = getCarLoadoutStats(car, inventorySlots);
   const carRating = getOverallScore(carStats);
   const driverRating = getDriverRating(driver);
@@ -274,8 +191,14 @@ function StatsColumn({
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-red-300">{title}</p>
           <p className="mt-0.5 truncate text-[10px] font-bold text-zinc-400">{driver?.name ?? "No driver"}</p>
         </div>
-        <RatingBadge label="Car" value={carRating} />
-        <RatingBadge label="Drv" value={driverRating} />
+        <div className="rounded-md border border-red-500/30 bg-red-950/20 px-2 py-1 text-right">
+          <p className="text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">Car</p>
+          <p className="text-sm font-black leading-none text-red-300">{carRating}</p>
+        </div>
+        <div className="rounded-md border border-red-500/30 bg-red-950/20 px-2 py-1 text-right">
+          <p className="text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">Drv</p>
+          <p className="text-sm font-black leading-none text-red-300">{driverRating}</p>
+        </div>
       </div>
 
       <div className="grid gap-3">
@@ -283,7 +206,7 @@ function StatsColumn({
           <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">Car Stats</p>
           <div className="grid gap-1.5">
             {carStatKeys.map((key) => (
-              <MeterLine key={key} label={shortStatLabel(key)} value={carStats[key]} />
+              <MeterLine key={key} name={shortLabel(key)} value={carStats[key]} />
             ))}
           </div>
         </div>
@@ -292,7 +215,7 @@ function StatsColumn({
           <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">Driver Stats</p>
           <div className="grid gap-1.5">
             {driverStatKeys.map((key) => (
-              <MeterLine key={key} label={shortStatLabel(key)} value={driver?.stats[key] ?? 0} />
+              <MeterLine key={key} name={shortLabel(key)} value={driver?.stats[key] ?? 0} />
             ))}
           </div>
         </div>
@@ -302,8 +225,8 @@ function StatsColumn({
 }
 
 function LoadoutStatsOverview({ loadout, inventorySlots }: { loadout: { car1: CarLoadout; car2: CarLoadout }; inventorySlots: GameInventorySlot[] }) {
-  const driver1 = drivers.find((item) => item.id === loadout.car1.driverId);
-  const driver2 = drivers.find((item) => item.id === loadout.car2.driverId);
+  const driver1 = drivers.find((driver) => driver.id === loadout.car1.driverId);
+  const driver2 = drivers.find((driver) => driver.id === loadout.car2.driverId);
 
   return (
     <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
@@ -377,11 +300,7 @@ export function RaceLoadoutScreen() {
         onSelectTeamMember={(member: TeamMember) => {
           if (pickerMode.type !== "team_member") return;
 
-          equipTeamMember({
-            slotType: pickerMode.slotType,
-            memberId: member.id,
-          });
-
+          equipTeamMember({ slotType: pickerMode.slotType, memberId: member.id });
           setPickerMode(null);
         }}
       />
@@ -401,9 +320,7 @@ export function RaceLoadoutScreen() {
             key={item}
             onClick={() => setTab(item)}
             className={`border-b-2 px-3 py-3 text-[10px] font-black uppercase tracking-[0.14em] active:scale-[0.98] ${
-              tab === item
-                ? "border-red-500 bg-red-950/20 text-zinc-100"
-                : "border-transparent text-zinc-500"
+              tab === item ? "border-red-500 bg-red-950/20 text-zinc-100" : "border-transparent text-zinc-500"
             }`}
           >
             {item === "car1" ? "Driver 1" : item === "car2" ? "Driver 2" : "Team"}
@@ -427,18 +344,11 @@ export function RaceLoadoutScreen() {
       {tab !== "team" ? (
         <>
           <DriverCard driver={driver} onClick={() => setIsDriverPickerOpen(true)} />
-
           <RaceCarLoadoutMap
             car={car}
             carId={activeCarId}
             inventorySlots={inventorySlots}
-            onSelectSlot={(slotType) =>
-              setPickerMode({
-                type: "car_part",
-                carId: activeCarId,
-                slotType,
-              })
-            }
+            onSelectSlot={(slotType) => setPickerMode({ type: "car_part", carId: activeCarId, slotType })}
           />
         </>
       ) : (
@@ -456,12 +366,7 @@ export function RaceLoadoutScreen() {
               return (
                 <button
                   key={slot}
-                  onClick={() =>
-                    setPickerMode({
-                      type: "team_member",
-                      slotType: slot,
-                    })
-                  }
+                  onClick={() => setPickerMode({ type: "team_member", slotType: slot })}
                   className="grid grid-cols-[1fr_auto] rounded-lg border border-zinc-800 bg-black/35 p-3 text-left active:scale-[0.98]"
                 >
                   <div className="min-w-0">
