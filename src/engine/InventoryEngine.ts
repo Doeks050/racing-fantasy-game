@@ -3,7 +3,8 @@ import type { CarPart, CarPartType, Driver, TeamMember, TeamSlotType } from "@/t
 import type { GameInventorySlot, GameState } from "./GameState";
 
 export const GARAGE_GRID_COLUMNS = 10;
-export const GARAGE_MIN_ROWS = 8;
+export const GARAGE_MIN_ROWS = 40;
+export const GARAGE_PICKER_MIN_ROWS = 8;
 
 export type HydratedGarageSlot = GameInventorySlot & {
   item: CarPart;
@@ -113,14 +114,14 @@ export const InventoryEngine = {
       .filter((slot): slot is HydratedGarageSlot => Boolean(slot));
   },
 
-  getGridRowCount(slots: HydratedGarageSlot[]): number {
+  getGridRowCount(slots: HydratedGarageSlot[], minRows = GARAGE_MIN_ROWS): number {
     const occupiedRows = slots.reduce((maxRow, slot) => {
       const row = slot.gridPosition?.row ?? 0;
       const height = slot.isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
       return Math.max(maxRow, row + height);
     }, 0);
 
-    return Math.max(GARAGE_MIN_ROWS, occupiedRows + 2);
+    return Math.max(minRows, occupiedRows + 2);
   },
 
   isCarPartSlotEquipped(state: GameState, inventorySlotId: string): boolean {
