@@ -131,19 +131,23 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
   return (
     <button
       onClick={onClick}
-      className="relative z-20 grid min-h-[122px] grid-rows-[auto_1fr_auto] rounded-lg border border-white/10 bg-zinc-950/92 p-2.5 text-center shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
+      className="relative z-20 min-h-[122px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950/92 text-center shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
     >
-      <p className="truncate text-[10px] font-black uppercase tracking-[0.12em] text-zinc-200">{label(slot)}</p>
-
-      <div className="my-2 flex min-h-[62px] items-center justify-center overflow-hidden rounded-md border border-zinc-800 bg-black/55 p-1.5">
+      <div className="absolute inset-0 flex items-center justify-center p-2 pt-7 pb-7">
         {part?.imagePath ? (
-          <img src={part.imagePath} alt={part.name} className="max-h-[76px] max-w-full object-contain" draggable={false} />
+          <img src={part.imagePath} alt={part.name} className="h-full w-full object-contain" draggable={false} />
         ) : (
-          <span className="text-[13px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
+          <span className="text-[18px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
         )}
       </div>
 
-      <p className="text-[9px] font-black uppercase tracking-[0.12em] text-red-300">Configure</p>
+      <div className="absolute inset-x-0 top-0 bg-black/70 px-2 py-1.5 backdrop-blur-sm">
+        <p className="truncate text-[10px] font-black uppercase tracking-[0.12em] text-zinc-100">{label(slot)}</p>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 bg-black/70 px-2 py-1.5 backdrop-blur-sm">
+        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-red-300">Configure</p>
+      </div>
     </button>
   );
 }
