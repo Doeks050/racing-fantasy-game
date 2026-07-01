@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type PointerEvent } from "react";
+import { useRef, useState, type PointerEvent, type ReactNode } from "react";
 import { GARAGE_GRID_COLUMNS, GARAGE_GRID_ROWS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 
@@ -50,7 +50,7 @@ function MiniStat({ label, value, accent = false }: { label: string; value: stri
   );
 }
 
-function Panel({ title, action, children }: { title: string; action?: string; children: React.ReactNode }) {
+function Panel({ title, action, children }: { title: string; action?: string; children: ReactNode }) {
   return (
     <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
       <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
@@ -360,8 +360,8 @@ export function GarageStashScreen() {
         <div className="absolute bottom-11 left-38 h-8 w-8 rounded-md border border-zinc-700 bg-zinc-900" />
 
         <div className="relative p-4">
-          <p className="text-xs font-black uppercase italic tracking-[0.18em] text-red-500">Garage Storage</p>
-          <h2 className="mt-1 max-w-[260px] text-4xl font-black uppercase leading-[0.9] tracking-tight text-zinc-50">Garage Stash</h2>
+          <p className="text-xs font-black uppercase italic tracking-[0.18em] text-red-500">Team Storage</p>
+          <h2 className="mt-1 max-w-[260px] text-4xl font-black uppercase leading-[0.9] tracking-tight text-zinc-50">Pitbox</h2>
           <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
             10 x 40 storage matrix · drag to organize
           </p>
@@ -382,7 +382,7 @@ export function GarageStashScreen() {
         <MiniStat label="Usage" value={`${storageUsage}%`} />
       </div>
 
-      <Panel title="Storage Usage" action="Garage">
+      <Panel title="Pitbox Usage" action="Garage">
         <div className="grid gap-2">
           <div className="grid grid-cols-[1fr_auto] items-center gap-2">
             <p className="text-xs font-bold text-zinc-400">Used space</p>
@@ -390,12 +390,12 @@ export function GarageStashScreen() {
           </div>
           <ProgressBar value={storageUsage} />
           <p className="text-xs leading-5 text-zinc-500">
-            Mounted car parts are hidden from the stash. Tap a stored part for details, or drag it inside the grid.
+            Mounted car parts are hidden from the Pitbox. Tap a stored part for details, or drag it inside the grid.
           </p>
         </div>
       </Panel>
 
-      <Panel title="Stash Matrix" action={`${GARAGE_GRID_COLUMNS} x ${GARAGE_GRID_ROWS}`}>
+      <Panel title="Pitbox Matrix" action={`${GARAGE_GRID_COLUMNS} x ${GARAGE_GRID_ROWS}`}>
         <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2">
           <div
             ref={gridRef}
@@ -419,7 +419,7 @@ export function GarageStashScreen() {
             {slots.length === 0 && (
               <div className="pointer-events-none z-10 col-span-10 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
                 <div>
-                  <p className="text-sm font-black text-zinc-300">Stash is empty</p>
+                  <p className="text-sm font-black text-zinc-300">Pitbox is empty</p>
                   <p className="mt-1 text-xs text-zinc-500">All starter parts are currently mounted on your cars.</p>
                 </div>
               </div>
