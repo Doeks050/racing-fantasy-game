@@ -80,21 +80,21 @@ function MeterLine({ name, value }: { name: string; value: number }) {
 
 function DriverCard({ driver, onClick }: { driver: Driver | undefined; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="grid grid-cols-[64px_1fr] gap-3 rounded-lg border border-white/10 bg-black/45 p-3 text-left active:scale-[0.98]">
-      <div className="relative h-20 overflow-hidden rounded-md border border-red-500/25 bg-zinc-950">
+    <button onClick={onClick} className="grid grid-cols-[56px_1fr] gap-2 rounded-lg border border-white/10 bg-black/45 p-2 text-left active:scale-[0.98]">
+      <div className="relative h-16 overflow-hidden rounded-md border border-red-500/25 bg-zinc-950">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_22%,rgba(239,68,68,0.22),transparent_48%)]" />
-        <div className="absolute bottom-0 left-1/2 h-14 w-10 -translate-x-1/2 rounded-t-full bg-zinc-800" />
-        <div className="absolute left-1/2 top-4 h-7 w-7 -translate-x-1/2 rounded-full bg-zinc-700" />
+        <div className="absolute bottom-0 left-1/2 h-11 w-8 -translate-x-1/2 rounded-t-full bg-zinc-800" />
+        <div className="absolute left-1/2 top-3 h-6 w-6 -translate-x-1/2 rounded-full bg-zinc-700" />
       </div>
 
       <div className="min-w-0 self-center">
-        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-zinc-500">Driver</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-500">Driver</p>
         <div className="mt-1 grid grid-cols-[1fr_auto] items-center gap-2">
-          <h3 className="truncate text-base font-black uppercase text-zinc-100">{driver?.name ?? "Empty Driver"}</h3>
-          {driver && <span className="rounded-sm bg-yellow-500/15 px-1.5 py-0.5 text-[9px] font-black text-yellow-300">{getDriverRating(driver)}</span>}
+          <h3 className="truncate text-sm font-black uppercase text-zinc-100">{driver?.name ?? "Empty Driver"}</h3>
+          {driver && <span className="rounded-sm bg-yellow-500/15 px-1.5 py-0.5 text-[8px] font-black text-yellow-300">{getDriverRating(driver)}</span>}
         </div>
-        <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-500">Tap to change</p>
-        {driver && <p className="mt-2 text-[10px] font-black uppercase text-red-300">{driver.rarity}</p>}
+        <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-zinc-500">Tap to change</p>
+        {driver && <p className="mt-1 text-[9px] font-black uppercase text-red-300">{driver.rarity}</p>}
       </div>
     </button>
   );
@@ -104,14 +104,14 @@ function RaceCarBackground() {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-lg bg-black/55">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.18),transparent_45%)]" />
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-lg bg-black/35">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.12),transparent_48%)]" />
       {!imageFailed ? (
         <img
           src={RACE_CAR_IMAGE_PATH}
           alt="Race car top down"
           onError={() => setImageFailed(true)}
-          className="absolute left-1/2 top-1/2 h-[390px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-40"
+          className="absolute left-1/2 top-1/2 h-[430px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-70"
           draggable={false}
         />
       ) : (
@@ -131,22 +131,18 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
   return (
     <button
       onClick={onClick}
-      className="relative z-20 min-h-[122px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950/92 text-center shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
+      className="relative z-20 min-h-[122px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950/88 text-center shadow-lg shadow-black/35 backdrop-blur-[1px] active:scale-[0.98]"
     >
-      <div className="absolute inset-0 flex items-center justify-center p-2 pt-7 pb-7">
+      <div className="absolute inset-0 flex items-center justify-center p-1.5 pt-7">
         {part?.imagePath ? (
           <img src={part.imagePath} alt={part.name} className="h-full w-full object-contain" draggable={false} />
         ) : (
-          <span className="text-[18px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
+          <span className="text-[20px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
         )}
       </div>
 
-      <div className="absolute inset-x-0 top-0 bg-black/70 px-2 py-1.5 backdrop-blur-sm">
+      <div className="absolute inset-x-0 top-0 bg-black/60 px-2 py-1 backdrop-blur-sm">
         <p className="truncate text-[10px] font-black uppercase tracking-[0.12em] text-zinc-100">{label(slot)}</p>
-      </div>
-
-      <div className="absolute inset-x-0 bottom-0 bg-black/70 px-2 py-1.5 backdrop-blur-sm">
-        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-red-300">Configure</p>
       </div>
     </button>
   );
@@ -164,16 +160,16 @@ function RaceCarLoadoutMap({
   onSelectSlot: (slot: CarSlotType) => void;
 }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
-      <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
-        <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">Car Parts</h3>
-        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
+    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/25">
+      <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-1.5">
+        <h3 className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300">Car Parts</h3>
+        <p className="text-[8px] font-black uppercase tracking-[0.12em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
       </div>
 
-      <div className="relative min-h-[510px] overflow-hidden rounded-lg border border-zinc-800 bg-black/45 p-3">
+      <div className="relative min-h-[506px] overflow-hidden rounded-lg border border-zinc-800 bg-black/40 p-2">
         <RaceCarBackground />
 
-        <div className="relative z-10 grid h-full min-h-[486px] grid-cols-2 content-between gap-2">
+        <div className="relative z-10 grid h-full min-h-[488px] grid-cols-2 content-between gap-2">
           {partSlotRows.flatMap(([leftSlot, rightSlot]) => [leftSlot, rightSlot]).map((slot) => (
             <PartSlotCard key={slot} slot={slot} part={resolvePart(car.parts[slot], inventorySlots)} onClick={() => onSelectSlot(slot)} />
           ))}
@@ -190,7 +186,7 @@ function StatsColumn({ title, car, driver, inventorySlots }: { title: string; ca
 
   return (
     <div className="rounded-lg border border-white/10 bg-black/35 p-2">
-      <div className="mb-3 grid grid-cols-[1fr_auto_auto] items-center gap-2">
+      <div className="mb-2 grid grid-cols-[1fr_auto_auto] items-center gap-2">
         <div className="min-w-0">
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-red-300">{title}</p>
           <p className="mt-0.5 truncate text-[10px] font-bold text-zinc-400">{driver?.name ?? "No driver"}</p>
@@ -233,10 +229,10 @@ function LoadoutStatsOverview({ loadout, inventorySlots }: { loadout: { car1: Ca
   const driver2 = drivers.find((driver) => driver.id === loadout.car2.driverId);
 
   return (
-    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
-      <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
-        <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">Loadout Stats</h3>
-        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">Cars + Drivers</p>
+    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/25">
+      <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-1.5">
+        <h3 className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300">Loadout Stats</h3>
+        <p className="text-[8px] font-black uppercase tracking-[0.12em] text-red-400">Cars + Drivers</p>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
@@ -317,13 +313,13 @@ export function RaceLoadoutScreen() {
   const teamStats = getTeamLoadoutStats(loadout.team);
 
   return (
-    <div className="grid gap-3 pb-4">
+    <div className="grid gap-2 pb-4">
       <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-white/10 bg-zinc-950/85 shadow-lg shadow-black/25">
         {(["car1", "car2", "team"] as Tab[]).map((item) => (
           <button
             key={item}
             onClick={() => setTab(item)}
-            className={`border-b-2 px-3 py-3 text-[10px] font-black uppercase tracking-[0.14em] active:scale-[0.98] ${
+            className={`border-b-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] active:scale-[0.98] ${
               tab === item ? "border-red-500 bg-red-950/20 text-zinc-100" : "border-transparent text-zinc-500"
             }`}
           >
@@ -332,13 +328,13 @@ export function RaceLoadoutScreen() {
         ))}
       </div>
 
-      <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
+      <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/25">
         <div className="grid grid-cols-[1fr_auto] items-center gap-2">
           <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.18em] text-zinc-500">Race Loadout</p>
-            <h2 className="mt-1 text-xl font-black uppercase text-zinc-50">{validation.isReady ? "Ready" : "Incomplete"}</h2>
+            <p className="text-[8px] font-black uppercase tracking-[0.16em] text-zinc-500">Race Loadout</p>
+            <h2 className="mt-0.5 text-lg font-black uppercase text-zinc-50">{validation.isReady ? "Ready" : "Incomplete"}</h2>
           </div>
-          <div className="rounded-md border border-red-500/30 bg-red-950/20 px-3 py-2 text-right">
+          <div className="rounded-md border border-red-500/30 bg-red-950/20 px-2 py-1.5 text-right">
             <p className="text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">Slots</p>
             <p className="text-sm font-black text-red-300">{validation.filledSlots}/{validation.totalSlots}</p>
           </div>
@@ -356,10 +352,10 @@ export function RaceLoadoutScreen() {
           />
         </>
       ) : (
-        <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
-          <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
-            <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">Pitwall Setup</h3>
-            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">Team</p>
+        <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/25">
+          <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-1.5">
+            <h3 className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300">Pitwall Setup</h3>
+            <p className="text-[8px] font-black uppercase tracking-[0.12em] text-red-400">Team</p>
           </div>
 
           <div className="grid gap-2">
@@ -371,10 +367,10 @@ export function RaceLoadoutScreen() {
                 <button
                   key={slot}
                   onClick={() => setPickerMode({ type: "team_member", slotType: slot })}
-                  className="grid grid-cols-[1fr_auto] rounded-lg border border-zinc-800 bg-black/35 p-3 text-left active:scale-[0.98]"
+                  className="grid grid-cols-[1fr_auto] rounded-lg border border-zinc-800 bg-black/35 p-2.5 text-left active:scale-[0.98]"
                 >
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-zinc-500">{label(slot)}</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.14em] text-zinc-500">{label(slot)}</p>
                     <p className="mt-1 truncate text-sm font-bold text-zinc-100">{member?.name ?? "Empty"}</p>
                   </div>
                   <span className="self-center text-[10px] font-black uppercase text-red-300">Select</span>
@@ -383,10 +379,10 @@ export function RaceLoadoutScreen() {
             })}
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-2 grid grid-cols-2 gap-2">
             {Object.entries(teamStats).map(([stat, value]) => (
               <div key={stat} className="rounded-lg border border-zinc-800 bg-black/35 p-2">
-                <p className="text-[9px] font-black uppercase tracking-[0.12em] text-zinc-500">{label(stat)}</p>
+                <p className="text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">{label(stat)}</p>
                 <p className="mt-1 text-lg font-black text-zinc-100">{value}</p>
               </div>
             ))}
