@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type PointerEvent } from "react";
-import { GARAGE_GRID_COLUMNS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
+import { GARAGE_GRID_COLUMNS, GARAGE_GRID_ROWS, InventoryEngine, type HydratedGarageSlot } from "@/engine";
 import { useGameStore } from "@/store/useGameStore";
 
 const CELL_HEIGHT_PX = 36;
@@ -31,6 +31,35 @@ function itemSubtitle(slot: HydratedGarageSlot) {
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
+}
+
+function ProgressBar({ value }: { value: number }) {
+  return (
+    <div className="h-1.5 overflow-hidden rounded-sm bg-zinc-800">
+      <div className="h-full bg-red-500" style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+    </div>
+  );
+}
+
+function MiniStat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="rounded-md border border-white/10 bg-zinc-950/75 p-2">
+      <p className="truncate text-[8px] uppercase tracking-[0.12em] text-zinc-500">{label}</p>
+      <p className={`mt-1 truncate text-[11px] font-black ${accent ? "text-red-400" : "text-zinc-100"}`}>{value}</p>
+    </div>
+  );
+}
+
+function Panel({ title, action, children }: { title: string; action?: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
+      <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
+        <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">{title}</h3>
+        {action && <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{action}</p>}
+      </div>
+      {children}
+    </section>
+  );
 }
 
 function ItemImage({ imagePath, alt, large = false }: { imagePath?: string; alt: string; large?: boolean }) {
@@ -70,19 +99,19 @@ function ItemInfoSheet({ slot, onClose }: { slot: HydratedGarageSlot; onClose: (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 px-3 pb-3">
       <button className="absolute inset-0" aria-label="Close item info" onClick={onClose} />
 
-      <section className="relative w-full max-w-md rounded-3xl border border-cyan-500/30 bg-zinc-950 p-4 shadow-2xl">
+      <section className="relative w-full max-w-md rounded-3xl border border-red-500/30 bg-zinc-950 p-4 shadow-2xl shadow-black">
         <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-zinc-700" />
 
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.25em] text-cyan-300">{slot.item.rarity}</p>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-red-400">{slot.item.rarity}</p>
             <h3 className="mt-1 text-2xl font-black text-zinc-100">{slot.item.name}</h3>
             <p className="mt-1 text-sm text-zinc-400">{itemSubtitle(slot)}</p>
           </div>
 
           <button
             onClick={onClose}
-            className="rounded-2xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-bold text-zinc-300 active:scale-95"
+            className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm font-bold text-zinc-300 active:scale-95"
           >
             Close
           </button>
@@ -99,15 +128,15 @@ function ItemInfoSheet({ slot, onClose }: { slot: HydratedGarageSlot; onClose: (
         <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Value</p>
-            <p className="font-black text-cyan-300">{slot.item.value}</p>
+            <p className="font-black text-red-300">{slot.item.value}</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Grid</p>
-            <p className="font-black text-cyan-300">{width}x{height}</p>
+            <p className="font-black text-red-300">{width}x{height}</p>
           </div>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-3">
             <p className="text-[10px] uppercase text-zinc-500">Rotation</p>
-            <p className="font-black text-cyan-300">{slot.isRotated ? "Rotated" : "Default"}</p>
+            <p className="font-black text-red-300">{slot.isRotated ? "Rotated" : "Default"}</p>
           </div>
         </div>
 
@@ -131,6 +160,14 @@ export function GarageStashScreen() {
   const slots = InventoryEngine.getHydratedStashSlots(gameState);
   const rowCount = InventoryEngine.getGridRowCount(slots);
   const infoSlot = slots.find((slot) => slot.slotId === infoSlotId) ?? null;
+  const mountedCount = gameState.garage.inventorySlots.length - slots.length;
+  const occupiedCells = slots.reduce((total, slot) => {
+    const width = slot.isRotated ? slot.item.gridSize.height : slot.item.gridSize.width;
+    const height = slot.isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
+    return total + width * height;
+  }, 0);
+  const storageCapacity = GARAGE_GRID_COLUMNS * GARAGE_GRID_ROWS;
+  const storageUsage = Math.round((occupiedCells / storageCapacity) * 100);
 
   function getGridMetrics() {
     const grid = gridRef.current;
@@ -308,104 +345,143 @@ export function GarageStashScreen() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-zinc-500">Storage Grid</p>
-        <h2 className="mt-1 text-2xl font-black">Garage Stash</h2>
-        <p className="mt-1 text-sm text-zinc-500">Equipped car parts are mounted on the cars and hidden from stash.</p>
+    <div className="grid gap-3 pb-4">
+      <section className="relative min-h-[184px] overflow-hidden rounded-lg border border-white/10 bg-zinc-950 shadow-2xl shadow-black">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_22%,rgba(239,68,68,0.2),transparent_34%),linear-gradient(180deg,rgba(13,15,18,0.35),#050607_90%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.08)_50%,transparent_100%)] opacity-50" />
+        <div className="absolute bottom-7 right-5 grid grid-cols-10 gap-1 opacity-35">
+          {Array.from({ length: 50 }).map((_, index) => (
+            <span key={index} className="h-2 w-2 rounded-sm border border-red-500/30 bg-black/70" />
+          ))}
+        </div>
+        <div className="absolute bottom-8 left-5 h-16 w-44 skew-x-[-18deg] rounded-md border border-red-500/30 bg-black/70 shadow-[0_0_45px_rgba(239,68,68,0.24)]" />
+        <div className="absolute bottom-11 left-10 h-8 w-8 rounded-md border border-zinc-700 bg-zinc-900" />
+        <div className="absolute bottom-11 left-24 h-8 w-8 rounded-md border border-zinc-700 bg-zinc-900" />
+        <div className="absolute bottom-11 left-38 h-8 w-8 rounded-md border border-zinc-700 bg-zinc-900" />
+
+        <div className="relative p-4">
+          <p className="text-xs font-black uppercase italic tracking-[0.18em] text-red-500">Garage Storage</p>
+          <h2 className="mt-1 max-w-[260px] text-4xl font-black uppercase leading-[0.9] tracking-tight text-zinc-50">Garage Stash</h2>
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400">
+            10 x 40 storage matrix · drag to organize
+          </p>
+        </div>
+
+        <div className="absolute right-3 top-4 w-[108px] rounded-md border border-white/10 bg-black/65 p-2">
+          <p className="text-[8px] uppercase tracking-[0.14em] text-zinc-500">Capacity</p>
+          <p className="mt-1 text-base font-black text-red-500">{storageCapacity}</p>
+          <p className="mt-1 text-[8px] uppercase tracking-[0.12em] text-zinc-500">slots</p>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-5 gap-2">
+        <MiniStat label="Grid" value={`${GARAGE_GRID_COLUMNS}x${GARAGE_GRID_ROWS}`} accent />
+        <MiniStat label="Stored" value={`${slots.length}`} />
+        <MiniStat label="Mounted" value={`${mountedCount}`} />
+        <MiniStat label="Cells" value={`${occupiedCells}/${storageCapacity}`} />
+        <MiniStat label="Usage" value={`${storageUsage}%`} />
       </div>
 
-      <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-2">
-        <div
-          ref={gridRef}
-          className="relative grid touch-none gap-1"
-          style={{
-            gridTemplateColumns: `repeat(${GARAGE_GRID_COLUMNS}, minmax(0, 1fr))`,
-            gridTemplateRows: `repeat(${rowCount}, ${CELL_HEIGHT_PX}px)`,
-          }}
-        >
-          {Array.from({ length: GARAGE_GRID_COLUMNS * rowCount }).map((_, index) => (
-            <div
-              key={`cell-${index}`}
-              className="rounded-md border border-zinc-800/80 bg-zinc-950/50"
-              style={{
-                gridColumn: (index % GARAGE_GRID_COLUMNS) + 1,
-                gridRow: Math.floor(index / GARAGE_GRID_COLUMNS) + 1,
-              }}
-            />
-          ))}
+      <Panel title="Storage Usage" action="Garage">
+        <div className="grid gap-2">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+            <p className="text-xs font-bold text-zinc-400">Used space</p>
+            <p className="text-xs font-black text-red-300">{storageUsage}%</p>
+          </div>
+          <ProgressBar value={storageUsage} />
+          <p className="text-xs leading-5 text-zinc-500">
+            Mounted car parts are hidden from the stash. Tap a stored part for details, or drag it inside the grid.
+          </p>
+        </div>
+      </Panel>
 
-          {slots.length === 0 && (
-            <div className="pointer-events-none z-10 col-span-10 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
-              <div>
-                <p className="text-sm font-black text-zinc-300">Stash is empty</p>
-                <p className="mt-1 text-xs text-zinc-500">All starter parts are currently mounted on your cars.</p>
+      <Panel title="Stash Matrix" action={`${GARAGE_GRID_COLUMNS} x ${GARAGE_GRID_ROWS}`}>
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-2">
+          <div
+            ref={gridRef}
+            className="relative grid touch-none gap-1"
+            style={{
+              gridTemplateColumns: `repeat(${GARAGE_GRID_COLUMNS}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${rowCount}, ${CELL_HEIGHT_PX}px)`,
+            }}
+          >
+            {Array.from({ length: GARAGE_GRID_COLUMNS * rowCount }).map((_, index) => (
+              <div
+                key={`cell-${index}`}
+                className="rounded-md border border-zinc-800/80 bg-zinc-950/50"
+                style={{
+                  gridColumn: (index % GARAGE_GRID_COLUMNS) + 1,
+                  gridRow: Math.floor(index / GARAGE_GRID_COLUMNS) + 1,
+                }}
+              />
+            ))}
+
+            {slots.length === 0 && (
+              <div className="pointer-events-none z-10 col-span-10 row-span-3 flex items-center justify-center rounded-2xl border border-dashed border-zinc-700 bg-zinc-950/70 p-4 text-center">
+                <div>
+                  <p className="text-sm font-black text-zinc-300">Stash is empty</p>
+                  <p className="mt-1 text-xs text-zinc-500">All starter parts are currently mounted on your cars.</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {dragState?.didMove && (
-            <div
-              className={`pointer-events-none z-10 rounded-md border-2 border-dashed ${
-                dragState.isValid ? "border-cyan-300 bg-cyan-400/10" : "border-red-400 bg-red-500/10"
-              }`}
-              style={{
-                gridColumn: `${dragState.targetColumn + 1} / span ${getSlotVisualSize(dragState.slotId, dragState.isRotated).width}`,
-                gridRow: `${dragState.targetRow + 1} / span ${getSlotVisualSize(dragState.slotId, dragState.isRotated).height}`,
-              }}
-            />
-          )}
-
-          {slots.map((slot) => {
-            const isBeingDragged = dragState?.slotId === slot.slotId;
-            const isRotated = isBeingDragged ? dragState.isRotated : Boolean(slot.isRotated);
-            const width = isRotated ? slot.item.gridSize.height : slot.item.gridSize.width;
-            const height = isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
-            const column = isBeingDragged ? dragState.targetColumn : slot.gridPosition?.column ?? 0;
-            const row = isBeingDragged ? dragState.targetRow : slot.gridPosition?.row ?? 0;
-            const isSelected = slot.slotId === selectedSlotId;
-            const showName = width > 1 || height > 1;
-
-            return (
-              <button
-                key={slot.slotId}
-                title={slot.item.name}
-                onPointerDown={(event) => handlePointerDown(event, slot.slotId)}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={() => setDragState(null)}
-                className={`relative z-20 overflow-hidden rounded-md border text-left shadow-lg transition-transform active:scale-[0.98] ${
-                  isBeingDragged && dragState?.isValid === false
-                    ? "border-red-400 bg-red-950/80"
-                    : isSelected
-                      ? "border-cyan-300 bg-cyan-950/80"
-                      : "border-zinc-700 bg-zinc-950"
+            {dragState?.didMove && (
+              <div
+                className={`pointer-events-none z-10 rounded-md border-2 border-dashed ${
+                  dragState.isValid ? "border-red-300 bg-red-400/10" : "border-red-400 bg-red-500/10"
                 }`}
                 style={{
-                  gridColumn: `${column + 1} / span ${width}`,
-                  gridRow: `${row + 1} / span ${height}`,
-                  opacity: isBeingDragged && dragState?.isValid === false ? 0.8 : 1,
+                  gridColumn: `${dragState.targetColumn + 1} / span ${getSlotVisualSize(dragState.slotId, dragState.isRotated).width}`,
+                  gridRow: `${dragState.targetRow + 1} / span ${getSlotVisualSize(dragState.slotId, dragState.isRotated).height}`,
                 }}
-              >
-                <ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} />
-                {!slot.item.imagePath && <ItemFallback value={label(slot.item.type).slice(0, 3)} />}
-                {showName && (
-                  <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/65 px-1 py-0.5">
-                    <p className="truncate text-[9px] font-bold leading-tight text-zinc-100">{slot.item.name}</p>
-                    <p className="truncate text-[8px] text-zinc-500">{itemSubtitle(slot)}</p>
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+              />
+            )}
 
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-        <p className="text-sm text-zinc-400">
-          Tap a stored item to open details. Drag stored items inside the grid to move them. Mounted car parts are managed from Loadout.
-        </p>
-      </div>
+            {slots.map((slot) => {
+              const isBeingDragged = dragState?.slotId === slot.slotId;
+              const isRotated = isBeingDragged ? dragState.isRotated : Boolean(slot.isRotated);
+              const width = isRotated ? slot.item.gridSize.height : slot.item.gridSize.width;
+              const height = isRotated ? slot.item.gridSize.width : slot.item.gridSize.height;
+              const column = isBeingDragged ? dragState.targetColumn : slot.gridPosition?.column ?? 0;
+              const row = isBeingDragged ? dragState.targetRow : slot.gridPosition?.row ?? 0;
+              const isSelected = slot.slotId === selectedSlotId;
+              const showName = width > 1 || height > 1;
+
+              return (
+                <button
+                  key={slot.slotId}
+                  title={slot.item.name}
+                  onPointerDown={(event) => handlePointerDown(event, slot.slotId)}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={() => setDragState(null)}
+                  className={`relative z-20 overflow-hidden rounded-md border text-left shadow-lg transition-transform active:scale-[0.98] ${
+                    isBeingDragged && dragState?.isValid === false
+                      ? "border-red-400 bg-red-950/80"
+                      : isSelected
+                        ? "border-red-300 bg-red-950/70"
+                        : "border-zinc-700 bg-zinc-950"
+                  }`}
+                  style={{
+                    gridColumn: `${column + 1} / span ${width}`,
+                    gridRow: `${row + 1} / span ${height}`,
+                    opacity: isBeingDragged && dragState?.isValid === false ? 0.8 : 1,
+                  }}
+                >
+                  <ItemImage imagePath={slot.item.imagePath} alt={slot.item.name} />
+                  {!slot.item.imagePath && <ItemFallback value={label(slot.item.type).slice(0, 3)} />}
+                  {showName && (
+                    <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/65 px-1 py-0.5">
+                      <p className="truncate text-[9px] font-bold leading-tight text-zinc-100">{slot.item.name}</p>
+                      <p className="truncate text-[8px] text-zinc-500">{itemSubtitle(slot)}</p>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Panel>
 
       {infoSlot && <ItemInfoSheet slot={infoSlot} onClose={() => setInfoSlotId(null)} />}
     </div>
