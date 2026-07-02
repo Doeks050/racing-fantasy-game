@@ -6,9 +6,11 @@ import {
   getHomeCircuitMeta,
   getHomeDeadlines,
   getHomeWeekendInfo,
+  homeDriverLeaderboardPreview,
   homeSchedule,
   homeSponsorPreview,
-  homeStandingsPreview,
+  homeTeamLeaderboardPreview,
+  type HomeLeaderboardPreviewItem,
 } from "@/data/home/homeDashboard";
 import { RaceLoadoutScreen } from "@/screens/loadout/RaceLoadoutScreen";
 import { GarageStashScreen } from "@/screens/garage/GarageStashScreen";
@@ -56,13 +58,43 @@ const navItems: { id: Screen; label: string; icon: string }[] = [
 
 function Panel({ title, action, children }: { title: string; action?: string; children: ReactNode }) {
   return (
-    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-3 shadow-lg shadow-black/25">
-      <div className="mb-3 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-2">
-        <h3 className="truncate text-[10px] font-black uppercase tracking-[0.18em] text-zinc-300">{title}</h3>
-        {action && <p className="text-[9px] font-black uppercase tracking-[0.14em] text-red-400">{action}</p>}
+    <section className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/20">
+      <div className="mb-2 grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-1.5">
+        <h3 className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300">{title}</h3>
+        {action && <p className="text-[8px] font-black uppercase tracking-[0.12em] text-red-400">{action}</p>}
       </div>
       {children}
     </section>
+  );
+}
+
+function CollapsiblePanel({
+  title,
+  action,
+  summary,
+  children,
+}: {
+  title: string;
+  action?: string;
+  summary: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <details className="rounded-lg border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/20">
+      <summary className="cursor-pointer list-none marker:hidden">
+        <div className="grid grid-cols-[1fr_auto] items-center gap-2 border-b border-white/5 pb-1.5">
+          <div className="min-w-0">
+            <h3 className="truncate text-[9px] font-black uppercase tracking-[0.16em] text-zinc-300">{title}</h3>
+            <div className="mt-1">{summary}</div>
+          </div>
+          <div className="text-right">
+            {action && <p className="text-[8px] font-black uppercase tracking-[0.12em] text-red-400">{action}</p>}
+            <p className="mt-1 text-[8px] font-black uppercase tracking-[0.12em] text-zinc-500">Open</p>
+          </div>
+        </div>
+      </summary>
+      <div className="mt-2">{children}</div>
+    </details>
   );
 }
 
@@ -84,51 +116,51 @@ function ProgressBar({ value }: { value: number }) {
 }
 
 function scheduleStatusLabel(status: string, time: string) {
-  if (status === "completed") {
-    return "DONE";
-  }
-
-  if (status === "locked") {
-    return "LOCKED";
-  }
-
+  if (status === "completed") return "DONE";
+  if (status === "locked") return "LOCKED";
   return time;
 }
 
 function scheduleStatusClasses(status: string, isRace: boolean) {
-  if (status === "completed") {
-    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
-  }
-
-  if (isRace) {
-    return "border-red-500/40 bg-red-500/10 text-red-300";
-  }
-
+  if (status === "completed") return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
+  if (isRace) return "border-red-500/40 bg-red-500/10 text-red-300";
   return "border-zinc-700 bg-zinc-900 text-zinc-300";
 }
 
 function deadlineTarget(id: string): Screen {
-  if (id === "reward_draft") {
-    return "upgrades";
-  }
-
-  if (id === "sponsor_lock") {
-    return "sponsors";
-  }
-
+  if (id === "reward_draft") return "upgrades";
+  if (id === "sponsor_lock") return "sponsors";
   return "raceWeekend";
 }
 
 function deadlineValueClasses(id: string, value: string) {
-  if (id === "reward_draft" && value === "Ready") {
-    return "text-purple-300";
-  }
-
-  if (id.includes("lock")) {
-    return "text-red-300";
-  }
-
+  if (id === "reward_draft" && value === "Ready") return "text-purple-300";
+  if (id.includes("lock")) return "text-red-300";
   return "text-zinc-100";
+}
+
+function LeaderboardList({ title, items, playerTeamName, onOpen }: { title: string; items: HomeLeaderboardPreviewItem[]; playerTeamName: string; onOpen: () => void }) {
+  return (
+    <div className="rounded-md border border-zinc-800 bg-black/30 p-1.5">
+      <div className="mb-1 grid grid-cols-[1fr_auto] items-center gap-2 px-1">
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-zinc-500">{title}</p>
+        <button onClick={onOpen} className="text-[8px] font-black uppercase text-red-300 active:scale-95">Full</button>
+      </div>
+      <div className="grid gap-1">
+        {items.map((item) => (
+          <button
+            key={`${title}-${item.rank}-${item.name}`}
+            onClick={onOpen}
+            className={`grid grid-cols-[22px_1fr_52px] rounded px-1.5 py-1 text-left text-[9px] ${item.isPlayer ? "bg-red-950/35 text-red-300" : "bg-zinc-950/60 text-zinc-300"}`}
+          >
+            <span className="font-black">{item.rank}</span>
+            <span className="truncate font-bold">{item.isPlayer && item.name === "You" ? playerTeamName : item.name}</span>
+            <span className="text-right font-black">{item.points}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function RacingFantasyApp() {
@@ -158,19 +190,17 @@ export function RacingFantasyApp() {
   return (
     <main className="h-dvh overflow-hidden bg-black text-zinc-100">
       <div className="mx-auto flex h-full max-w-md flex-col overflow-hidden border-x border-red-950/40 bg-[#07090c]">
-        <header className="shrink-0 border-b border-white/10 bg-black px-3 py-2">
-          <div className="grid grid-cols-[36px_1fr_auto] items-center gap-2">
-            <button onClick={() => setScreen("more")} className="rounded-md p-2 text-lg text-zinc-300 active:scale-95">
-              ☰
-            </button>
+        <header className="shrink-0 border-b border-white/10 bg-black px-2 py-1">
+          <div className="grid grid-cols-[30px_1fr_auto] items-center gap-2">
+            <button onClick={() => setScreen("more")} className="rounded-md p-1.5 text-base text-zinc-300 active:scale-95">☰</button>
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase italic tracking-[0.18em] text-red-500">Pitwall</p>
-              <h1 className="-mt-1 truncate text-sm font-black uppercase tracking-[0.2em] text-zinc-50">Racing Fantasy</h1>
+              <p className="text-[8px] font-black uppercase italic tracking-[0.16em] text-red-500">Pitwall</p>
+              <h1 className="-mt-0.5 truncate text-xs font-black uppercase tracking-[0.18em] text-zinc-50">Racing Fantasy</h1>
             </div>
             <div className="flex items-center gap-1">
-              <div className="rounded-md border border-yellow-500/30 bg-yellow-950/20 px-2 py-1 text-[10px] font-black text-yellow-300">◉ {player.credits}</div>
-              <div className="rounded-md border border-purple-500/30 bg-purple-950/20 px-2 py-1 text-[10px] font-black text-purple-300">◆ {player.xp}</div>
-              <button className="relative rounded-md p-2 text-zinc-300 active:scale-95">
+              <div className="rounded border border-yellow-500/30 bg-yellow-950/20 px-1.5 py-0.5 text-[9px] font-black text-yellow-300">◉ {player.credits}</div>
+              <div className="rounded border border-purple-500/30 bg-purple-950/20 px-1.5 py-0.5 text-[9px] font-black text-purple-300">◆ {player.xp}</div>
+              <button className="relative rounded p-1.5 text-zinc-300 active:scale-95">
                 ♟
                 <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500" />
               </button>
@@ -224,18 +254,10 @@ export function RacingFantasyApp() {
                       const isCompleted = item.status === "completed";
 
                       return (
-                        <button
-                          key={item.id}
-                          onClick={() => setScreen("raceWeekend")}
-                          className="grid grid-cols-[18px_1fr_auto] items-center gap-2 rounded-md bg-black/35 px-2 py-2 text-left active:scale-[0.98]"
-                        >
+                        <button key={item.id} onClick={() => setScreen("raceWeekend")} className="grid grid-cols-[18px_1fr_auto] items-center gap-2 rounded-md bg-black/35 px-2 py-2 text-left active:scale-[0.98]">
                           <div className="relative flex h-full justify-center">
                             {index < homeSchedule.length - 1 && <span className="absolute top-5 h-[calc(100%+6px)] w-px bg-white/10" />}
-                            <span
-                              className={`relative mt-0.5 h-2.5 w-2.5 rounded-full border ${
-                                isCompleted ? "border-emerald-400 bg-emerald-400" : isRace ? "border-red-400 bg-red-500" : "border-zinc-500 bg-zinc-800"
-                              }`}
-                            />
+                            <span className={`relative mt-0.5 h-2.5 w-2.5 rounded-full border ${isCompleted ? "border-emerald-400 bg-emerald-400" : isRace ? "border-red-400 bg-red-500" : "border-zinc-500 bg-zinc-800"}`} />
                           </div>
                           <div className="min-w-0">
                             <p className={`truncate text-[10px] font-black uppercase ${isRace ? "text-red-300" : "text-zinc-200"}`}>{item.name}</p>
@@ -253,11 +275,7 @@ export function RacingFantasyApp() {
                 <Panel title="Deadlines" action="Locks">
                   <div className="grid gap-2">
                     {deadlines.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setScreen(deadlineTarget(item.id))}
-                        className="rounded-md border border-white/10 bg-black/35 p-2 text-left active:scale-[0.98]"
-                      >
+                      <button key={item.id} onClick={() => setScreen(deadlineTarget(item.id))} className="rounded-md border border-white/10 bg-black/35 p-2 text-left active:scale-[0.98]">
                         <p className="truncate text-[9px] font-black uppercase tracking-[0.12em] text-zinc-500">{item.label}</p>
                         <div className="mt-1 grid grid-cols-[1fr_auto] items-end gap-2">
                           <p className={`truncate text-base font-black leading-none ${deadlineValueClasses(item.id, item.value)}`}>{item.value}</p>
@@ -269,25 +287,28 @@ export function RacingFantasyApp() {
                 </Panel>
               </div>
 
-              <Panel title="Standings" action="Global">
-                <div className="grid gap-1.5">
-                  {homeStandingsPreview.map((item) => (
-                    <button key={`${item.rank}-${item.teamName}`} onClick={() => setScreen("standings")} className={`grid grid-cols-[26px_1fr_64px] rounded-md px-2 py-1.5 text-left text-[10px] ${item.isPlayer ? "bg-red-950/40 text-red-300" : "bg-black/30 text-zinc-300"}`}>
-                      <span>{item.rank}</span>
-                      <span className="truncate font-bold">{item.isPlayer ? player.teamName : item.teamName}</span>
-                      <span className="text-right font-black">{item.points} pts</span>
-                    </button>
-                  ))}
+              <CollapsiblePanel
+                title="Standings"
+                action="2 Boards"
+                summary={<p className="text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-500">Driver leaderboard + Team leaderboard</p>}
+              >
+                <div className="grid gap-2">
+                  <LeaderboardList title="Driver Leaderboard" items={homeDriverLeaderboardPreview} playerTeamName={player.teamName} onOpen={() => setScreen("standings")} />
+                  <LeaderboardList title="Team Leaderboard" items={homeTeamLeaderboardPreview} playerTeamName={player.teamName} onOpen={() => setScreen("standings")} />
                 </div>
-              </Panel>
+              </CollapsiblePanel>
 
-              <Panel title="Sponsor Challenges" action={`Active ${gameState.economy.activeSponsorIds.length}/${homeSponsorPreview.length}`}>
+              <CollapsiblePanel
+                title="Sponsor Challenges"
+                action={`Active ${gameState.economy.activeSponsorIds.length}/${homeSponsorPreview.length}`}
+                summary={<p className="text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-500">Race objectives and rewards</p>}
+              >
                 <div className="grid gap-2">
                   {homeSponsorPreview.map((sponsor) => {
                     const progress = sponsor.target ? (sponsor.current / sponsor.target) * 100 : 0;
 
                     return (
-                      <button key={sponsor.id} onClick={() => setScreen("sponsors")} className="rounded-md border border-white/10 bg-black/35 p-3 text-left active:scale-[0.98]">
+                      <button key={sponsor.id} onClick={() => setScreen("sponsors")} className="rounded-md border border-white/10 bg-black/35 p-2 text-left active:scale-[0.98]">
                         <div className="grid grid-cols-[1fr_auto] items-center gap-2 text-[10px]">
                           <span className="truncate font-black uppercase text-zinc-200">{sponsor.title}</span>
                           <span className="text-zinc-500">{sponsor.current} / {sponsor.target}</span>
@@ -298,7 +319,7 @@ export function RacingFantasyApp() {
                     );
                   })}
                 </div>
-              </Panel>
+              </CollapsiblePanel>
             </div>
           )}
 
@@ -315,11 +336,7 @@ export function RacingFantasyApp() {
 
               <div className="grid gap-3">
                 {moreItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setScreen(item.id)}
-                    className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 text-left shadow-lg shadow-black/20 active:scale-[0.98]"
-                  >
+                  <button key={item.id} onClick={() => setScreen(item.id)} className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 text-left shadow-lg shadow-black/20 active:scale-[0.98]">
                     <h3 className="font-black text-zinc-100">{item.label}</h3>
                     <p className="mt-1 text-sm text-zinc-500">{item.description}</p>
                   </button>
@@ -349,15 +366,7 @@ export function RacingFantasyApp() {
             const isActive = screen === item.id;
 
             return (
-              <button
-                key={item.id}
-                onClick={() => setScreen(item.id)}
-                className={`rounded-md px-1 py-2 text-xs font-black uppercase active:scale-[0.96] ${
-                  isActive
-                    ? "text-red-500"
-                    : "text-zinc-500"
-                }`}
-              >
+              <button key={item.id} onClick={() => setScreen(item.id)} className={`rounded-md px-1 py-2 text-xs font-black uppercase active:scale-[0.96] ${isActive ? "text-red-500" : "text-zinc-500"}`}>
                 <span className="block text-sm leading-none">{item.icon}</span>
                 <span className="mt-1 block text-[9px]">{item.label}</span>
               </button>
