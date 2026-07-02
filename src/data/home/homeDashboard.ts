@@ -12,9 +12,9 @@ export type HomeDeadlineItem = {
   value: string;
 };
 
-export type HomeStandingPreviewItem = {
+export type HomeLeaderboardPreviewItem = {
   rank: number;
-  teamName: string;
+  name: string;
   points: number;
   isPlayer?: boolean;
 };
@@ -87,11 +87,18 @@ export const homeSchedule: HomeScheduleItem[] = [
   { id: "race", name: "Race", day: "Sun", time: "15:00", status: "locked" },
 ];
 
-export const homeStandingsPreview: HomeStandingPreviewItem[] = [
-  { rank: 1, teamName: "TurboFang", points: 1245 },
-  { rank: 2, teamName: "PitKing22", points: 1028 },
-  { rank: 3, teamName: "AeroWizard", points: 950 },
-  { rank: 25, teamName: "You", points: 650, isPlayer: true },
+export const homeDriverLeaderboardPreview: HomeLeaderboardPreviewItem[] = [
+  { rank: 1, name: "Milo Vance", points: 642, isPlayer: true },
+  { rank: 2, name: "Nova Cross", points: 611 },
+  { rank: 3, name: "Enzo Rix", points: 588 },
+  { rank: 4, name: "Kira Vale", points: 575, isPlayer: true },
+];
+
+export const homeTeamLeaderboardPreview: HomeLeaderboardPreviewItem[] = [
+  { rank: 1, name: "TurboFang", points: 1245 },
+  { rank: 2, name: "PitKing22", points: 1028 },
+  { rank: 3, name: "AeroWizard", points: 950 },
+  { rank: 25, name: "You", points: 650, isPlayer: true },
 ];
 
 export const homeSponsorPreview: HomeSponsorPreviewItem[] = [
