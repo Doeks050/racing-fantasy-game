@@ -115,14 +115,14 @@ function RaceCarBackground() {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-md bg-black/30">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.12),transparent_48%)]" />
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-md bg-black/25">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.11),transparent_50%)]" />
       {!imageFailed ? (
         <img
           src={RACE_CAR_IMAGE_PATH}
           alt="Race car top down"
           onError={() => setImageFailed(true)}
-          className="absolute left-1/2 top-1/2 h-[390px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-75"
+          className="absolute left-1/2 top-1/2 h-[430px] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 object-contain opacity-80"
           draggable={false}
         />
       ) : (
@@ -140,7 +140,7 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
   return (
     <button
       onClick={onClick}
-      className="relative z-20 min-h-[108px] overflow-hidden rounded-md border border-white/10 bg-zinc-950/86 text-center shadow-lg shadow-black/30 backdrop-blur-[1px] active:scale-[0.98]"
+      className="relative z-20 min-h-[108px] overflow-hidden rounded-md border border-white/10 bg-zinc-950/68 text-center shadow-lg shadow-black/25 backdrop-blur-[1px] active:scale-[0.98]"
     >
       <div className="absolute inset-0 flex items-center justify-center p-1.5 pt-6">
         {part?.imagePath ? (
@@ -155,7 +155,7 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
         )}
       </div>
 
-      <div className="absolute inset-x-0 top-0 bg-black/62 px-1.5 py-0.5 backdrop-blur-sm">
+      <div className="absolute inset-x-0 top-0 bg-black/52 px-1.5 py-0.5 backdrop-blur-sm">
         <p className="truncate text-[8px] font-black uppercase tracking-[0.1em] text-zinc-100">{label(slot)}</p>
       </div>
     </button>
@@ -180,7 +180,7 @@ function RaceCarLoadoutMap({
         <p className="text-[8px] font-black uppercase tracking-[0.12em] text-red-400">{carId === "car1" ? "Car 1" : "Car 2"}</p>
       </div>
 
-      <div className="relative min-h-[458px] overflow-hidden rounded-md border border-zinc-800 bg-black/40 p-2">
+      <div className="relative min-h-[458px] overflow-hidden rounded-md border border-zinc-800 bg-black/35 p-2">
         <RaceCarBackground />
 
         <div className="relative z-10 grid h-full min-h-[442px] grid-cols-2 content-between gap-2">
@@ -235,24 +235,16 @@ function StatsColumn({ title, car, driver, inventorySlots }: { title: string; ca
 function LoadoutStatsOverview({ loadout, inventorySlots }: { loadout: { car1: CarLoadout; car2: CarLoadout }; inventorySlots: GameInventorySlot[] }) {
   const driver1 = drivers.find((driver) => driver.id === loadout.car1.driverId);
   const driver2 = drivers.find((driver) => driver.id === loadout.car2.driverId);
-  const car1Stats = getCarLoadoutStats(loadout.car1, inventorySlots);
-  const car2Stats = getCarLoadoutStats(loadout.car2, inventorySlots);
 
   return (
     <details className="rounded-md border border-white/10 bg-zinc-950/85 p-2 shadow-lg shadow-black/20">
-      <summary className="cursor-pointer list-none rounded-md border border-zinc-800 bg-black/35 px-2 py-2 marker:hidden">
+      <summary className="cursor-pointer list-none rounded-md border border-zinc-800 bg-black/35 px-2 py-1.5 marker:hidden">
         <div className="grid grid-cols-[1fr_auto] items-center gap-2">
           <div className="min-w-0">
             <p className="text-[9px] font-black uppercase tracking-[0.16em] text-zinc-200">Loadout Stats</p>
             <p className="mt-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-zinc-500">Tap to open full car + driver stat list</p>
           </div>
           <span className="rounded border border-red-500/30 bg-red-950/15 px-2 py-1 text-[8px] font-black uppercase text-red-300">View</span>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1">
-          <MiniScore label="C1" value={getOverallScore(car1Stats)} />
-          <MiniScore label="D1" value={getDriverRating(driver1)} />
-          <MiniScore label="C2" value={getOverallScore(car2Stats)} />
-          <MiniScore label="D2" value={getDriverRating(driver2)} />
         </div>
       </summary>
 
@@ -339,7 +331,7 @@ export function RaceLoadoutScreen() {
           <button
             key={item}
             onClick={() => setTab(item)}
-            className={`h-9 border-b px-2 text-[9px] font-black uppercase tracking-[0.14em] active:scale-[0.98] ${
+            className={`h-7 border-b px-2 text-[8px] font-black uppercase tracking-[0.13em] active:scale-[0.98] ${
               tab === item
                 ? "border-red-500 bg-red-950/15 text-zinc-100"
                 : "border-transparent bg-zinc-950/40 text-zinc-500"
