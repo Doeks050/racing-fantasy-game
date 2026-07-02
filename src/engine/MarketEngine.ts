@@ -2,7 +2,7 @@ import { carParts, drivers, marketListings, marketTraders } from "@/data";
 import type { CarPart, Driver, GridSize, MarketListing, MarketTrader } from "@/types";
 import type { GameInventorySlot, GameState } from "./GameState";
 
-export const MARKET_GRID_COLUMNS = 6;
+export const MARKET_GRID_COLUMNS = 10;
 export const MARKET_MIN_ROWS = 6;
 const GARAGE_GRID_COLUMNS = 10;
 const GARAGE_GRID_ROWS = 40;
