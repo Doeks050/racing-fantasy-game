@@ -137,8 +137,6 @@ function RaceCarBackground() {
 }
 
 function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPart | undefined; onClick: () => void }) {
-  const fallbackLabel = label(slot).slice(0, 3);
-
   return (
     <button
       onClick={onClick}
@@ -148,7 +146,7 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
         {part?.imagePath ? (
           <img src={part.imagePath} alt={part.name} className="h-full w-full object-contain" draggable={false} />
         ) : (
-          <span className="text-[18px] font-black uppercase text-zinc-600">{fallbackLabel}</span>
+          <span className="text-[15px] font-black uppercase tracking-[0.14em] text-zinc-500">Empty</span>
         )}
       </div>
 
