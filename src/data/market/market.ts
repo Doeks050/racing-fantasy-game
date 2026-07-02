@@ -60,7 +60,7 @@ export const marketListings: MarketListing[] = [
     itemId: "common_floor_01",
     price: 900,
     stock: 1,
-    gridPosition: { column: 0, row: 2 },
+    gridPosition: { column: 6, row: 0 },
   },
   {
     id: "listing_engine_01",
@@ -114,7 +114,7 @@ export const marketListings: MarketListing[] = [
     itemId: "common_brakes_bremswork_01",
     price: 650,
     stock: 1,
-    gridPosition: { column: 2, row: 1 },
+    gridPosition: { column: 6, row: 0 },
   },
   {
     id: "listing_brakes_vescari_01",
@@ -132,7 +132,7 @@ export const marketListings: MarketListing[] = [
     itemId: "common_brakes_rps_01",
     price: 700,
     stock: 1,
-    gridPosition: { column: 4, row: 2 },
+    gridPosition: { column: 2, row: 2 },
   },
   {
     id: "listing_driver_milo_vance",
