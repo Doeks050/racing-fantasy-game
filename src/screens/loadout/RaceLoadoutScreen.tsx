@@ -145,6 +145,11 @@ function PartSlotCard({ slot, part, onClick }: { slot: CarSlotType; part: CarPar
       <div className="absolute inset-0 flex items-center justify-center p-1.5 pt-6">
         {part?.imagePath ? (
           <img src={part.imagePath} alt={part.name} className="h-full w-full object-contain" draggable={false} />
+        ) : part ? (
+          <div className="grid gap-1 px-2">
+            <span className="text-[11px] font-black uppercase leading-tight tracking-[0.08em] text-zinc-200">{part.name}</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.14em] text-red-300">Installed</span>
+          </div>
         ) : (
           <span className="text-[15px] font-black uppercase tracking-[0.14em] text-zinc-500">Empty</span>
         )}
