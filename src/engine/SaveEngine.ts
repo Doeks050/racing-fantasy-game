@@ -1,4 +1,6 @@
-import { createInitialGameState, type GameState } from "./GameState";
+import { carParts } from "@/data";
+import type { CarLoadout, CarPartType, RaceLoadout } from "@/types";
+import { createInitialGameState, type GameInventorySlot, type GameState } from "./GameState";
 
 export type SaveAdapter = {
   load: () => GameState | null;
@@ -14,6 +16,17 @@ export type AsyncSaveAdapter = {
 
 export const LOCAL_SAVE_KEY = "racing_fantasy_game_state_v1";
 
+const requiredCarPartSlots: CarPartType[] = [
+  "chassis",
+  "engine",
+  "gearbox",
+  "suspension",
+  "front_wing",
+  "rear_wing",
+  "floor",
+  "brakes",
+];
+
 export function isGameState(value: unknown): value is GameState {
   if (!value || typeof value !== "object") {
     return false;
@@ -22,8 +35,80 @@ export function isGameState(value: unknown): value is GameState {
   return "version" in value && "player" in value && "garage" in value && "race" in value;
 }
 
+function mergeInventorySlots(defaultSlots: GameInventorySlot[], savedSlots: GameInventorySlot[] | undefined) {
+  const mergedSlots = [...(savedSlots ?? [])];
+  const existingSlotIds = new Set(mergedSlots.map((slot) => slot.slotId));
+
+  defaultSlots.forEach((slot) => {
+    if (!existingSlotIds.has(slot.slotId)) {
+      mergedSlots.push(slot);
+    }
+  });
+
+  return mergedSlots;
+}
+
+function isValidPartSlot(slotId: string | undefined, slotType: CarPartType, inventorySlots: GameInventorySlot[]) {
+  const inventorySlot = inventorySlots.find((slot) => slot.slotId === slotId);
+  const part = carParts.find((candidate) => candidate.id === inventorySlot?.entityId);
+
+  return Boolean(inventorySlot && part?.type === slotType);
+}
+
+function repairCarLoadout(
+  savedCar: CarLoadout | undefined,
+  defaultCar: CarLoadout,
+  inventorySlots: GameInventorySlot[],
+  usedSlotIds: Set<string>,
+): CarLoadout {
+  const repairedParts: CarLoadout["parts"] = {};
+
+  requiredCarPartSlots.forEach((slotType) => {
+    const savedSlotId = savedCar?.parts?.[slotType];
+    const defaultSlotId = defaultCar.parts[slotType];
+
+    if (savedSlotId && !usedSlotIds.has(savedSlotId) && isValidPartSlot(savedSlotId, slotType, inventorySlots)) {
+      repairedParts[slotType] = savedSlotId;
+      usedSlotIds.add(savedSlotId);
+      return;
+    }
+
+    if (defaultSlotId && !usedSlotIds.has(defaultSlotId) && isValidPartSlot(defaultSlotId, slotType, inventorySlots)) {
+      repairedParts[slotType] = defaultSlotId;
+      usedSlotIds.add(defaultSlotId);
+    }
+  });
+
+  return {
+    ...defaultCar,
+    ...savedCar,
+    parts: repairedParts,
+  };
+}
+
+function repairRaceLoadout(
+  savedLoadout: RaceLoadout | undefined,
+  defaultLoadout: RaceLoadout,
+  inventorySlots: GameInventorySlot[],
+): RaceLoadout {
+  const usedSlotIds = new Set<string>();
+
+  return {
+    ...defaultLoadout,
+    ...savedLoadout,
+    car1: repairCarLoadout(savedLoadout?.car1, defaultLoadout.car1, inventorySlots, usedSlotIds),
+    car2: repairCarLoadout(savedLoadout?.car2, defaultLoadout.car2, inventorySlots, usedSlotIds),
+    team: {
+      ...defaultLoadout.team,
+      ...savedLoadout?.team,
+    },
+  };
+}
+
 export function migrateGameState(savedState: GameState): GameState {
   const defaultState = createInitialGameState();
+  const inventorySlots = mergeInventorySlots(defaultState.garage.inventorySlots, savedState.garage?.inventorySlots);
+  const activeLoadout = repairRaceLoadout(savedState.race?.activeLoadout, defaultState.race.activeLoadout, inventorySlots);
 
   return {
     ...defaultState,
@@ -35,40 +120,19 @@ export function migrateGameState(savedState: GameState): GameState {
     garage: {
       ...defaultState.garage,
       ...savedState.garage,
-      inventorySlots: savedState.garage?.inventorySlots ?? defaultState.garage.inventorySlots,
+      inventorySlots,
       ownedDriverIds: savedState.garage?.ownedDriverIds ?? defaultState.garage.ownedDriverIds,
       ownedStaffIds: savedState.garage?.ownedStaffIds ?? defaultState.garage.ownedStaffIds,
-      ownedPartIds: savedState.garage?.ownedPartIds ?? defaultState.garage.ownedPartIds,
+      ownedPartIds: Array.from(
+        new Set([...(savedState.garage?.ownedPartIds ?? []), ...defaultState.garage.ownedPartIds]),
+      ),
     },
     race: {
       ...defaultState.race,
       ...savedState.race,
       currentCircuitId: defaultState.race.currentCircuitId,
       currentWeekendId: defaultState.race.currentWeekendId,
-      activeLoadout: {
-        ...defaultState.race.activeLoadout,
-        ...savedState.race?.activeLoadout,
-        car1: {
-          ...defaultState.race.activeLoadout.car1,
-          ...savedState.race?.activeLoadout?.car1,
-          parts: {
-            ...defaultState.race.activeLoadout.car1.parts,
-            ...savedState.race?.activeLoadout?.car1?.parts,
-          },
-        },
-        car2: {
-          ...defaultState.race.activeLoadout.car2,
-          ...savedState.race?.activeLoadout?.car2,
-          parts: {
-            ...defaultState.race.activeLoadout.car2.parts,
-            ...savedState.race?.activeLoadout?.car2?.parts,
-          },
-        },
-        team: {
-          ...defaultState.race.activeLoadout.team,
-          ...savedState.race?.activeLoadout?.team,
-        },
-      },
+      activeLoadout,
     },
     economy: {
       ...defaultState.economy,
@@ -131,7 +195,9 @@ export const SaveEngine = {
   },
 
   load(adapter: SaveAdapter = LocalStorageSaveAdapter): GameState {
-    return adapter.load() ?? createInitialGameState();
+    const savedState = adapter.load();
+
+    return savedState ? migrateGameState(savedState) : createInitialGameState();
   },
 
   save(state: GameState, adapter: SaveAdapter = LocalStorageSaveAdapter) {
