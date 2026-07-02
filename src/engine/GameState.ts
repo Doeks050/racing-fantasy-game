@@ -61,6 +61,26 @@ export type GameState = {
   updatedAt: string;
 };
 
+const defaultInventorySlots: GameInventorySlot[] = [
+  { slotId: "slot_chassis_01", entityId: "common_chassis_01", quantity: 1, gridPosition: { column: 0, row: 0 } },
+  { slotId: "slot_engine_01", entityId: "common_engine_01", quantity: 1, gridPosition: { column: 2, row: 0 } },
+  { slotId: "slot_gearbox_01", entityId: "common_gearbox_01", quantity: 1, gridPosition: { column: 4, row: 0 } },
+  { slotId: "slot_suspension_01", entityId: "common_suspension_01", quantity: 1, gridPosition: { column: 6, row: 0 } },
+  { slotId: "slot_front_wing_01", entityId: "common_front_wing_01", quantity: 1, gridPosition: { column: 0, row: 2 } },
+  { slotId: "slot_rear_wing_01", entityId: "common_rear_wing_01", quantity: 1, gridPosition: { column: 2, row: 2 } },
+  { slotId: "slot_floor_01", entityId: "common_floor_01", quantity: 1, gridPosition: { column: 4, row: 2 } },
+  { slotId: "slot_brakes_01", entityId: "common_brakes_01", quantity: 1, gridPosition: { column: 6, row: 2 } },
+
+  { slotId: "slot_chassis_02", entityId: "common_chassis_01", quantity: 1, gridPosition: { column: 0, row: 5 } },
+  { slotId: "slot_engine_02", entityId: "common_engine_01", quantity: 1, gridPosition: { column: 2, row: 5 } },
+  { slotId: "slot_gearbox_02", entityId: "common_gearbox_01", quantity: 1, gridPosition: { column: 4, row: 5 } },
+  { slotId: "slot_suspension_02", entityId: "common_suspension_01", quantity: 1, gridPosition: { column: 6, row: 5 } },
+  { slotId: "slot_front_wing_02", entityId: "common_front_wing_01", quantity: 1, gridPosition: { column: 0, row: 7 } },
+  { slotId: "slot_rear_wing_02", entityId: "common_rear_wing_01", quantity: 1, gridPosition: { column: 2, row: 7 } },
+  { slotId: "slot_floor_02", entityId: "common_floor_01", quantity: 1, gridPosition: { column: 4, row: 7 } },
+  { slotId: "slot_brakes_02", entityId: "common_brakes_01", quantity: 1, gridPosition: { column: 6, row: 7 } },
+];
+
 export function createInitialGameState(): GameState {
   return {
     version: 1,
@@ -72,16 +92,7 @@ export function createInitialGameState(): GameState {
       level: 1,
     },
     garage: {
-      inventorySlots: [
-        { slotId: "slot_chassis_01", entityId: "common_chassis_01", quantity: 1, gridPosition: { column: 0, row: 0 } },
-        { slotId: "slot_engine_01", entityId: "common_engine_01", quantity: 1, gridPosition: { column: 2, row: 0 } },
-        { slotId: "slot_gearbox_01", entityId: "common_gearbox_01", quantity: 1, gridPosition: { column: 4, row: 0 } },
-        { slotId: "slot_suspension_01", entityId: "common_suspension_01", quantity: 1, gridPosition: { column: 0, row: 2 } },
-        { slotId: "slot_front_wing_01", entityId: "common_front_wing_01", quantity: 1, gridPosition: { column: 2, row: 2 } },
-        { slotId: "slot_rear_wing_01", entityId: "common_rear_wing_01", quantity: 1, gridPosition: { column: 0, row: 3 } },
-        { slotId: "slot_floor_01", entityId: "common_floor_01", quantity: 1, gridPosition: { column: 3, row: 3 } },
-        { slotId: "slot_brakes_01", entityId: "common_brakes_01", quantity: 1, gridPosition: { column: 5, row: 2 } },
-      ],
+      inventorySlots: defaultInventorySlots,
       ownedDriverIds: ["driver_milo_vance", "driver_kira_vale"],
       ownedStaffIds: [
         "team_pit_crew_common_01",
